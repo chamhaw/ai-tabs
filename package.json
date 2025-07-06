@@ -1,0 +1,45 @@
+{
+  "name": "ai-tabs",
+  "version": "1.0.0",
+  "description": "智能AI标签页管理扩展，支持多种AI服务供应商",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.254",
+    "@types/jest": "^27.5.2",
+    "jest": "^27.5.1",
+    "jest-environment-jsdom": "^27.5.1",
+    "jest-chrome": "^0.8.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "*.js",
+      "scripts/*.js",
+      "!popup.js",
+      "!tests/**",
+      "!node_modules/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    }
+  },
+  "keywords": [
+    "chrome-extension",
+    "ai",
+    "tabs",
+    "management"
+  ],
+  "author": "AI Tabs Team",
+  "license": "MIT"
+} 

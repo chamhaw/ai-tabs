@@ -1,0 +1,12 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Two rectangles separating -->
+  <rect x="2" y="3" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
+  <rect x="9" y="9" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/>
+  <!-- Separation arrows -->
+  <path d="M6.5 5L8 3.5L6.5 2" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9.5 11L8 12.5L9.5 14" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Small dots to show separation -->
+  <circle cx="8" cy="6" r="0.5" fill="currentColor" opacity="0.6"/>
+  <circle cx="8" cy="8" r="0.5" fill="currentColor" opacity="0.6"/>
+  <circle cx="8" cy="10" r="0.5" fill="currentColor" opacity="0.6"/>
+</svg>

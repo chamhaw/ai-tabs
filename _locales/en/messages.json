@@ -1,0 +1,870 @@
+{
+  "ext_name": {
+    "message": "AI Tab Manager",
+    "description": "Extension name"
+  },
+  "ext_description": {
+    "message": "Smart AI-powered tab grouping manager, supports 15+ providers including OpenAI/DeepSeek, automatically categorizes tabs to boost browsing efficiency.",
+    "description": "Extension description"
+  },
+  
+  "settings": {
+    "message": "Settings",
+    "description": "Settings page title"
+  },
+  "options_title": {
+    "message": "AI Tabs Settings"
+  },
+  "nav_general": {
+    "message": "General"
+  },
+  "nav_providers": {
+    "message": "Providers"
+  },
+  "nav_advanced": {
+    "message": "Advanced"
+  },
+  "nav_about": {
+    "message": "About"
+  },
+  "general_description": {
+    "message": "Configure basic AI service settings and preferences"
+  },
+  "providers_description": {
+    "message": "Manage AI model providers and related configurations"
+  },
+  "advanced_description": {
+    "message": "Advanced features and performance optimization settings"
+  },
+  "about_description": {
+    "message": "Extension information and help documentation"
+  },
+  "tab_current_provider": {
+    "message": "Current Config"
+  },
+  "tab_manage_providers": {
+    "message": "Manage Providers"
+  },
+  "language_setting": {
+    "message": "Interface Language",
+    "description": "Language setting label"
+  },
+  "language_setting_description": {
+    "message": "Extension needs to be reloaded after changing language",
+    "description": "Language setting description"
+  },
+  "language_auto": {
+    "message": "Auto Detect",
+    "description": "Auto detect language option"
+  },
+  "language_zh_cn": {
+    "message": "简体中文",
+    "description": "Simplified Chinese language option"
+  },
+  "language_en": {
+    "message": "English",
+    "description": "English language option"
+  },
+  "provider_select": {
+    "message": "Select Provider"
+  },
+  "provider_select_description": {
+    "message": "Choose the AI service provider you want to use"
+  },
+  "base_url": {
+    "message": "API Base URL"
+  },
+  "base_url_description": {
+    "message": "Base address of the API service"
+  },
+  "base_url_placeholder": {
+    "message": "https://api.example.com/v1"
+  },
+  "api_key": {
+    "message": "API Key",
+    "description": "API Key input label"
+  },
+  "api_key_description": {
+    "message": "Your API access key, will be stored securely"
+  },
+  "api_key_placeholder": {
+    "message": "Enter your API key",
+    "description": "API Key input placeholder"
+  },
+  "toggle_password_visibility": {
+    "message": "Show/Hide password",
+    "description": "Toggle password visibility button tooltip"
+  },
+  "global_settings": {
+    "message": "Global Settings",
+    "description": "Global settings title"
+  },
+  "configured_providers": {
+    "message": "Configured Providers",
+    "description": "Provider management page title"
+  },
+  "add_custom_provider": {
+    "message": "Add Custom Provider",
+    "description": "Add custom provider button text"
+  },
+  "api_key_status": {
+    "message": "API Key Status",
+    "description": "API key status label"
+  },
+  "base_url_status": {
+    "message": "Base URL",
+    "description": "Base URL status label"
+  },
+  "selected_model_status": {
+    "message": "Selected Model",
+    "description": "Selected model status label"
+  },
+  "configure_provider": {
+    "message": "Configure Provider",
+    "description": "Configure provider button text"
+  },
+  "model_select": {
+    "message": "Select Model"
+  },
+  "model_select_description": {
+    "message": "Choose the AI model to use"
+  },
+  "model_select_prompt": {
+    "message": "Please configure API key first"
+  },
+  "grouping_strategy": {
+    "message": "Grouping Strategy"
+  },
+  "grouping_strategy_description": {
+    "message": "Tab grouping strategy settings"
+  },
+  "grouping_strategy_placeholder": {
+    "message": "Enter custom grouping strategy, leave empty to use default"
+  },
+  "default_grouping_strategy": {
+    "message": "Intelligently group tabs based on their content and purpose, such as grouping tabs from the same website, related topics, or workflows together. Prioritize user browsing patterns and associations between tabs."
+  },
+  "save_settings": {
+    "message": "Save",
+    "description": "Save button text"
+  },
+  "save_all_settings": {
+    "message": "Save All Settings",
+    "description": "Save all settings button text"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button text"
+  },
+  "provider_name": {
+    "message": "Provider Name",
+    "description": "Provider name label"
+  },
+  "provider_name_description": {
+    "message": "Display name for the custom provider",
+    "description": "Provider name setting description"
+  },
+  "provider_name_placeholder": {
+    "message": "Enter provider name",
+    "description": "Provider name input placeholder"
+  },
+  "save_provider": {
+    "message": "Save Provider",
+    "description": "Save provider button text"
+  },
+
+  "provider_base_url": {
+    "message": "API Base URL"
+  },
+  "provider_base_url_placeholder": {
+    "message": "https://api.example.com/v1"
+  },
+  "provider_endpoint": {
+    "message": "Chat Endpoint"
+  },
+  "provider_endpoint_placeholder": {
+    "message": "/chat/completions"
+  },
+  "provider_default_models": {
+    "message": "Default Models"
+  },
+  "provider_models_placeholder": {
+    "message": "gpt-3.5-turbo\ngpt-4\ngemini-pro"
+  },
+  "provider_models_description": {
+    "message": "Enter one model name per line, leave empty to auto-fetch from API"
+  },
+
+  "max_tabs": {
+    "message": "Maximum Tab Count"
+  },
+  "auto_save": {
+    "message": "Auto Save"
+  },
+  "cache_timeout": {
+    "message": "Cache Timeout (minutes)"
+  },
+  "clear_cache": {
+    "message": "Clear Cache"
+  },
+  "reset_settings": {
+    "message": "Reset Settings"
+  },
+  "version": {
+    "message": "Version"
+  },
+  "description": {
+    "message": "Description"
+  },
+  "app_description": {
+    "message": "Intelligent AI tab management extension with multiple AI service provider support"
+  },
+  "features": {
+    "message": "Key Features"
+  },
+  "feature_1": {
+    "message": "Multiple AI Provider Support"
+  },
+  "feature_2": {
+    "message": "Smart Model Caching"
+  },
+  "feature_3": {
+    "message": "Secure Key Storage"
+  },
+  "feature_4": {
+    "message": "Custom Provider Management"
+  },
+  "feature_5": {
+    "message": "Multi-language Interface"
+  },
+
+  "provider_openai": {
+    "message": "OpenAI",
+    "description": "OpenAI provider name"
+  },
+  "provider_deepseek": {
+    "message": "DeepSeek",
+    "description": "DeepSeek provider name"
+  },
+  "provider_anthropic": {
+    "message": "Anthropic",
+    "description": "Anthropic provider name"
+  },
+  "provider_google": {
+    "message": "Google AI"
+  },
+  "provider_alibaba": {
+    "message": "Alibaba Cloud (Qwen)",
+    "description": "Alibaba Cloud provider name"
+  },
+  "provider_baidu": {
+    "message": "Baidu (ERNIE)",
+    "description": "Baidu provider name"
+  },
+  "provider_zhipu": {
+    "message": "Zhipu AI (ChatGLM)",
+    "description": "Zhipu AI provider name"
+  },
+  "provider_moonshot": {
+    "message": "Moonshot AI (Kimi)",
+    "description": "Moonshot AI provider name"
+  },
+  "provider_01ai": {
+    "message": "01.AI (Yi)",
+    "description": "01.AI provider name"
+  },
+  "provider_minimax": {
+    "message": "MiniMax",
+    "description": "MiniMax provider name"
+  },
+  "provider_doubao": {
+    "message": "ByteDance (Doubao)",
+    "description": "ByteDance provider name"
+  },
+  "provider_xunfei": {
+    "message": "iFlytek (Spark)",
+    "description": "iFlytek provider name"
+  },
+  "provider_sensetime": {
+    "message": "SenseTime",
+    "description": "SenseTime provider name"
+  },
+  "provider_stepfun": {
+    "message": "StepFun",
+    "description": "StepFun provider name"
+  },
+  "provider_tencent": {
+    "message": "Tencent (Hunyuan)",
+    "description": "Tencent provider name"
+  },
+  "provider_custom": {
+    "message": "Custom",
+    "description": "Custom provider option"
+  },
+  "error_invalid_api_url": {
+    "message": "Unable to build valid API URL",
+    "description": "API URL build failure error message"
+  },
+  "error_ai_settings_not_configured": {
+    "message": "AI settings are not configured",
+    "description": "AI settings not configured error message"
+  },
+  "error_api_key_decryption_failed": {
+    "message": "API key decryption failed, please reconfigure. This may be due to the security module being enabled. Please re-enter your API key.",
+    "description": "API key decryption failed error message"
+  },
+  "error_no_tabs_to_group": {
+    "message": "No tabs to group",
+    "description": "No tabs available for grouping message"
+  },
+  "error_no_valid_groups": {
+    "message": "No valid groups returned from AI",
+    "description": "AI returned invalid groups error message"
+  },
+  "log_grouping_completed": {
+    "message": "Grouping completed successfully",
+    "description": "Grouping completion log message"
+  },
+  
+  "system_prompt_intro": {
+    "message": "Please intelligently group the tab information (URLs and titles) by organizing related content together.",
+    "description": "AI system prompt introduction"
+  },
+  "system_prompt_existing_groups": {
+    "message": "Current window already has these groups: $1\n\nPlease prioritize reusing existing groups:\n- If new tabs are thematically related or functionally similar to existing groups, use the existing group names\n- Only create new groups when content is completely unrelated\n- Avoid creating duplicate groups with similar meanings",
+    "description": "Existing groups prompt"
+  },
+  "system_prompt_forbidden_rules": {
+    "message": "Please avoid creating vague group names like 'Other', 'Miscellaneous', 'Ungrouped', 'General', 'Temporary', etc. If tabs cannot be categorized into meaningful thematic groups, exclude them rather than creating meaningless groups.",
+    "description": "Rules against creating meaningless groups"
+  },
+  "system_prompt_strategy_prefix": {
+    "message": "Please follow this grouping strategy:",
+    "description": "Grouping strategy prefix"
+  },
+  "system_prompt_format_instructions": {
+    "message": "Please return only JSON format with intuitive group names:\n\n{\n  \"groups\": [\n    {\n      \"name\": \"Group name\",\n      \"tabs\": [\n        {\n          \"url\": \"Tab URL\",\n          \"title\": \"Tab title\"\n        }\n      ]\n    }\n  ]\n}",
+    "description": "JSON format output instructions"
+  },
+  
+  "min_tabs_in_group": {
+    "message": "Min Tabs in Group",
+    "description": "Minimum tabs in group setting"
+  },
+  "min_tabs_placeholder": {
+    "message": "e.g. 2",
+    "description": "Minimum tabs placeholder"
+  },
+  "auto_group_threshold": {
+    "message": "Auto Group Threshold",
+    "description": "Auto group threshold setting"
+  },
+  "auto_threshold_placeholder": {
+    "message": "e.g. 5",
+    "description": "Auto threshold placeholder"
+  },
+  "reuse_existing_groups": {
+    "message": "Reuse Existing Groups",
+    "description": "Reuse existing groups setting"
+  },
+  "min_tabs_description": {
+    "message": "Minimum number of tabs required for each group",
+    "description": "Minimum tabs description"
+  },
+  "auto_threshold_description": {
+    "message": "Number of tabs that triggers automatic grouping",
+    "description": "Auto threshold description"
+  },
+  "max_tabs_description": {
+    "message": "Maximum number of tabs to process simultaneously",
+    "description": "Max tabs description"
+  },
+  "auto_save_description": {
+    "message": "Automatically save configuration changes",
+    "description": "Auto save description"
+  },
+  "cache_timeout_description": {
+    "message": "How long to cache model lists before refreshing",
+    "description": "Cache timeout description"
+  },
+  "grouping_in_progress": {
+    "message": "Grouping in progress...",
+    "description": "Grouping in progress status"
+  },
+  "start_grouping_failed": {
+    "message": "Failed to start grouping: $1",
+    "description": "Start grouping failed message"
+  },
+  "grouping_success": {
+    "message": "Grouping completed",
+    "description": "Grouping success message"
+  },
+  "grouping_failed": {
+    "message": "Grouping failed: $1",
+    "description": "Grouping failed message"
+  },
+  "ungrouping_failed": {
+    "message": "Failed to ungroup: $1",
+    "description": "Ungrouping failed message"
+  },
+  "ungroup_success": {
+    "message": "Ungrouping successful",
+    "description": "Ungroup success message"
+  },
+  "smart_group_tabs": {
+    "message": "Smart Group Tabs",
+    "description": "Smart group button text"
+  },
+  "ungroup_all_tabs": {
+    "message": "Ungroup All Tabs",
+    "description": "Ungroup all tabs button text"
+  },
+  "open_options": {
+    "message": "Full Settings",
+    "description": "Open full settings page button text"
+  },
+  
+  "enable_auto_group": {
+    "message": "Enable Auto Group",
+    "description": "Enable auto group setting"
+  },
+  "auto_group_config": {
+    "message": "Auto Grouping Settings",
+    "description": "Auto grouping configuration section title"
+  },
+  "grouping_rules_config": {
+    "message": "Grouping Rules",
+    "description": "Grouping rules configuration section title"
+  },
+
+  "log_api_key_decryption_failed": {
+    "message": "API key decryption failed, please reconfigure",
+    "description": "API key decryption failed log message"
+  },
+  "log_api_key_decryption_failed_empty_config": {
+    "message": "API key decryption failed, returning empty config",
+    "description": "API key decryption failed empty config log message"
+  },
+  "error_no_active_normal_window": {
+    "message": "No active normal window found",
+    "description": "No normal window found error message"
+  },
+  "error_grouping_in_progress": {
+    "message": "Grouping is already in progress for this window",
+    "description": "Grouping in progress error message"
+  },
+  "message_grouping_process_completed": {
+    "message": "Grouping process completed",
+    "description": "Grouping process completed message"
+  },
+  "error_unknown_error": {
+    "message": "An unknown error occurred",
+    "description": "Unknown error message"
+  },
+  "error_grouptabs_no_windowid": {
+    "message": "groupTabs was called without a windowId",
+    "description": "groupTabs function missing windowId error"
+  },
+  "error_cannot_group_tabs_in_window": {
+    "message": "Cannot group tabs in $1 window. Only normal windows are supported.",
+    "description": "Cannot group tabs in specific window type error"
+  },
+  "error_no_normal_window_available": {
+    "message": "No normal window available for grouping",
+    "description": "No normal window available error message"
+  },
+  "error_window_validation_failed": {
+    "message": "Window validation failed: {error}",
+    "description": "Window validation failed error prompt"
+  },
+  "default_group_name": {
+    "message": "AI Group",
+    "description": "Default group name"
+  },
+  "log_get_secure_settings_failed": {
+    "message": "getSecureSettings call failed",
+    "description": "Get secure settings failed log message"
+  },
+  "log_refresh_models_failed": {
+    "message": "Failed to refresh model list",
+    "description": "Refresh models failed log message"
+  },
+  "error_refresh_models_failed": {
+    "message": "Failed to refresh model list: $1",
+    "description": "Refresh models failed user message"
+  },
+  "error_unknown_provider": {
+    "message": "Unknown provider",
+    "description": "Unknown provider error message"
+  },
+  
+  "status_configured": {
+    "message": "Configured",
+    "description": "Provider configured status"
+  },
+  "status_not_configured": {
+    "message": "Not Configured",
+    "description": "Provider not configured status"
+  },
+  "type_builtin": {
+    "message": "Built-in",
+    "description": "Built-in provider type"
+  },
+  "type_custom": {
+    "message": "Custom",
+    "description": "Custom provider type"
+  },
+  "type_label": {
+    "message": "Type",
+    "description": "Provider type label"
+  },
+  "custom_suffix": {
+    "message": "Custom",
+    "description": "Custom provider name suffix"
+  },
+  "model_not_selected": {
+    "message": "Not Selected",
+    "description": "Model not selected status"
+  },
+  "select_model_prompt": {
+    "message": "Please select a model...",
+    "description": "Select model prompt"
+  },
+  "refresh_models_prompt": {
+    "message": "Please click the refresh button to get model list",
+    "description": "Refresh models prompt"
+  },
+  "please_select_provider": {
+    "message": "Please select a provider first",
+    "description": "Please select provider prompt"
+  },
+  "please_configure_api_key": {
+    "message": "Please configure API key first",
+    "description": "Please configure API key prompt"
+  },
+  "loading_models": {
+    "message": "Loading model list...",
+    "description": "Loading models status"
+  },
+  "fetching_models": {
+    "message": "Fetching model list...",
+    "description": "Fetching models status"
+  },
+  "no_models_found": {
+    "message": "No available models found",
+    "description": "No models found prompt"
+  },
+  "no_models_check_config": {
+    "message": "No available models found, please check API configuration",
+    "description": "No models found check config prompt"
+  },
+  "models_loaded_success": {
+    "message": "Successfully loaded {count} models",
+    "description": "Models loaded success prompt"
+  },
+  "refresh_failed_retry": {
+    "message": "Refresh failed, click to retry",
+    "description": "Refresh failed retry prompt"
+  },
+  
+  "language_switched": {
+    "message": "Language switched",
+    "description": "Language switch success prompt"
+  },
+  "language_switch_failed": {
+    "message": "Language switch failed, please refresh the page",
+    "description": "Language switch failed prompt"
+  },
+  "language_settings_saved": {
+    "message": "Language settings saved, please refresh the page",
+    "description": "Language settings saved prompt"
+  },
+  
+  "provider_config_saved": {
+    "message": "Provider configuration saved",
+    "description": "Provider config save success prompt"
+  },
+  "provider_saved": {
+    "message": "Provider saved successfully",
+    "description": "Provider save success prompt"
+  },
+  "provider_deleted": {
+    "message": "Provider deleted successfully",
+    "description": "Provider delete success prompt"
+  },
+  "save_failed": {
+    "message": "Save failed: {error}",
+    "description": "Save failed prompt"
+  },
+  "delete_failed": {
+    "message": "Delete failed: {error}",
+    "description": "Delete failed prompt"
+  },
+  "edit_provider_failed": {
+    "message": "Edit provider failed: {error}",
+    "description": "Edit provider failed prompt"
+  },
+  "save_settings_failed": {
+    "message": "Save settings failed: {error}",
+    "description": "Save settings failed prompt"
+  },
+  
+  "global_settings_saved": {
+    "message": "Global settings saved",
+    "description": "Global settings save success prompt"
+  },
+  "save_global_settings_failed": {
+    "message": "Save global settings failed: {error}",
+    "description": "Save global settings failed prompt"
+  },
+  "advanced_settings_saved": {
+    "message": "Advanced settings saved",
+    "description": "Advanced settings save success prompt"
+  },
+  "cache_cleared": {
+    "message": "Cache cleared",
+    "description": "Cache clear success prompt"
+  },
+  "all_settings_reset": {
+    "message": "All settings reset",
+    "description": "Settings reset success prompt"
+  },
+  
+  "form_elements_not_found": {
+    "message": "Form elements not found",
+    "description": "Form elements not found error"
+  },
+  "form_elements_not_found_refresh": {
+    "message": "Form elements not found, please refresh and try again",
+    "description": "Form elements not found refresh prompt"
+  },
+  "form_init_failed": {
+    "message": "Form initialization failed, please refresh and try again",
+    "description": "Form initialization failed prompt"
+  },
+  "fill_required_fields": {
+    "message": "Please fill in provider name and API base URL",
+    "description": "Required fields prompt"
+  },
+  "cannot_generate_provider_key": {
+    "message": "Cannot generate provider identifier, please check provider name",
+    "description": "Cannot generate identifier error"
+  },
+  "invalid_url_format": {
+    "message": "Please enter a valid URL format",
+    "description": "URL format error prompt"
+  },
+  "provider_not_exist": {
+    "message": "Provider does not exist, please refresh and try again",
+    "description": "Provider not exist error"
+  },
+  
+  "config_ui_not_found": {
+    "message": "Configuration UI elements not found, please manually switch to \"Current Config\" tab",
+    "description": "Config UI elements not found error"
+  },
+  "show_config_form_failed": {
+    "message": "Show configuration form failed: {error}",
+    "description": "Show config form failed prompt"
+  },
+  "configure_provider_failed": {
+    "message": "Configure provider failed: {error}",
+    "description": "Configure provider failed prompt"
+  },
+  "operation_failed": {
+    "message": "Operation failed: {error}",
+    "description": "Operation failed general prompt"
+  },
+  "refresh_models_failed": {
+    "message": "Refresh model list failed: {error}",
+    "description": "Refresh models failed prompt"
+  },
+  "switching_language": {
+    "message": "Switching language...",
+    "description": "Language switching in progress prompt"
+  },
+  "configuring_provider": {
+    "message": "Configuring {provider} provider",
+    "description": "Provider configuration in progress prompt"
+  },
+  "provider_selection_saved": {
+    "message": "Provider selection saved",
+    "description": "Provider selection save success prompt"
+  },
+  "error_non_normal_window": {
+    "message": "Tabs can only be grouped in normal browser windows",
+    "description": "Non-normal window error prompt"
+  },
+  "error_no_normal_window": {
+    "message": "No normal browser window available for grouping",
+    "description": "No normal window error prompt"
+  },
+  "grouping_completed_with_skipped": {
+    "message": "Grouping completed: processed {validCount} tabs, skipped {skippedCount} system pages, created {groupCount} groups",
+    "description": "Grouping completion message with skipped pages"
+  },
+  "grouping_completed_simple": {
+    "message": "Grouping completed: processed {validCount} tabs, created {groupCount} groups",
+    "description": "Simple grouping completion message"
+  },
+  "grouping_skipped_no_valid_tabs": {
+    "message": "No valid tabs found for grouping, possibly all system or extension pages",
+    "description": "Message when no valid tabs are available for grouping"
+  },
+  "error_generate_system_prompt": {
+    "message": "Error occurred while generating system prompt",
+    "description": "Error message when generating system prompt"
+  },
+  "fallback_system_prompt": {
+    "message": "You are an intelligent tab grouping assistant. Please group tabs intelligently based on their URLs and titles, and return the results in the following JSON format:\n\n{\n  \"groups\": [\n    {\n      \"name\": \"Group name\",\n      \"tabs\": [\n        {\n          \"url\": \"Tab URL\",\n          \"title\": \"Tab title\"\n        }\n      ]\n    }\n  ]\n}",
+    "description": "Fallback system prompt"
+  },
+  "error_tab_data_serialization_failed": {
+    "message": "Tab data serialization failed",
+    "description": "Tab data serialization failed error"
+  },
+  "error_tab_data_format_failed": {
+    "message": "Tab data formatting failed",
+    "description": "Tab data formatting failed error"
+  },
+  "error_api_key_empty": {
+    "message": "API key is empty or invalid",
+    "description": "API key is empty or invalid error"
+  },
+  "error_model_name_empty": {
+    "message": "Model name is empty or invalid",
+    "description": "Model name is empty or invalid error"
+  },
+  "error_api_url_invalid": {
+    "message": "API URL format is invalid",
+    "description": "API URL format is invalid error"
+  },
+  "error_api_url_format_invalid": {
+    "message": "API URL format is invalid: {url}",
+    "description": "API URL format is invalid error (with URL)"
+  },
+  "error_api_key_format_invalid": {
+    "message": "API key format is invalid",
+    "description": "API key format is invalid error"
+  },
+  "error_api_key_invalid_reconfigure": {
+    "message": "API key format is invalid, please reconfigure",
+    "description": "API key format is invalid, needs reconfiguration"
+  },
+  "error_model_name_format_invalid": {
+    "message": "Model name format is invalid",
+    "description": "Model name format is invalid error"
+  },
+  "error_model_name_invalid_reselect": {
+    "message": "Model name format is invalid, please reselect model",
+    "description": "Model name format is invalid, needs reselection"
+  },
+  "error_json_serialization_invalid": {
+    "message": "JSON serialization result is invalid",
+    "description": "JSON serialization result is invalid error"
+  },
+  "warning_request_body_too_large": {
+    "message": "Request body too large, may cause API call failure",
+    "description": "Request body too large warning"
+  },
+  "error_request_data_format_failed": {
+    "message": "Request data formatting failed",
+    "description": "Request data formatting failed error"
+  },
+  "error_fetch_api_call_failed": {
+    "message": "Fetch API call failed",
+    "description": "Fetch API call failed error"
+  },
+  "error_detailed_call_parameters": {
+    "message": "Detailed call parameters",
+    "description": "Detailed call parameters log"
+  },
+  "error_api_call_parameters_invalid": {
+    "message": "API call parameters are invalid. Please check provider configuration: URL={url}, Model={model}",
+    "description": "API call parameters invalid error"
+  },
+  "error_network_request_failed": {
+    "message": "Network request failed: {message}",
+    "description": "Network request failed error"
+  },
+  "error_api_request_failed": {
+    "message": "API request failed",
+    "description": "API request failed error"
+  },
+  "error_target_window_not_normal": {
+    "message": "Target window is no longer a normal window, unable to complete grouping",
+    "description": "Target window is not a normal window error"
+  },
+  "error_pre_grouping_window_validation_failed": {
+    "message": "Pre-grouping window validation failed",
+    "description": "Pre-grouping window validation failed error"
+  },
+  "error_pre_grouping_validation_failed_retry": {
+    "message": "Pre-grouping window validation failed, please retry",
+    "description": "Pre-grouping window validation failed, needs retry"
+  },
+  "error_only_normal_window_operation": {
+    "message": "Can only operate on tabs in normal browser windows",
+    "description": "Error for operations only on normal browser windows"
+  },
+  "error_only_normal_window_grouping": {
+    "message": "Can only group tabs in normal browser windows",
+    "description": "Error for grouping only on normal browser windows"
+  },
+  "error_ungroup_all_failed": {
+    "message": "Failed to ungroup all",
+    "description": "Failed to ungroup all error"
+  },
+  "error_ungroup_failed": {
+    "message": "Failed to ungroup",
+    "description": "Failed to ungroup error"
+  },
+  "error_merge_to_existing_group_failed": {
+    "message": "Failed to merge to existing group",
+    "description": "Failed to merge to existing group error"
+  },
+  "error_create_new_group_failed": {
+    "message": "Failed to create new group",
+    "description": "Failed to create new group error"
+  },
+  "error_build_api_url_baseurl_empty": {
+    "message": "buildApiUrl: baseURL is empty",
+    "description": "Build API URL baseURL empty error"
+  },
+  "error_build_api_url_baseurl_invalid": {
+    "message": "buildApiUrl: baseURL format is invalid",
+    "description": "Build API URL baseURL format invalid error"
+  },
+  "error_get_secure_settings_failed": {
+    "message": "getSecureSettings call failed",
+    "description": "Get secure settings failed error"
+  },
+  "error_get_window_info_failed": {
+    "message": "Failed to get window information",
+    "description": "Failed to get window information error"
+  },
+  "error_target_window_not_normal_window": {
+    "message": "Target window is not a normal window",
+    "description": "Target window is not a normal window error"
+  },
+  "error_system_prompt_generation_failed": {
+    "message": "System prompt generation failed",
+    "description": "System prompt generation failed error"
+  },
+  "error_api_url_build_failed": {
+    "message": "API URL build failed",
+    "description": "API URL build failed error"
+  },
+  "error_json_serialization_failed": {
+    "message": "JSON serialization failed",
+    "description": "JSON serialization failed error"
+  },
+  "error_get_target_window_info_failed": {
+    "message": "Unable to get target window information, please retry",
+    "description": "Unable to get target window information error"
+  },
+  "error_system_prompt_generation_failed_text": {
+    "message": "System prompt generation failed",
+    "description": "System prompt generation failed error text"
+  }
+} 

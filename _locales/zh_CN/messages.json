@@ -1,0 +1,872 @@
+{
+  "ext_name": {
+    "message": "AI 浏览器标签页管理器",
+    "description": "扩展名称"
+  },
+  "ext_description": {
+    "message": "智能AI标签页分组管理器，支持OpenAI/DeepSeek等15+供应商，自动分类标签页提升浏览效率。",
+    "description": "扩展描述"
+  },
+  
+  "settings": {
+    "message": "设置",
+    "description": "设置页面标题"
+  },
+  "options_title": {
+    "message": "AI Tabs 设置"
+  },
+  "nav_general": {
+    "message": "常规设置"
+  },
+  "nav_providers": {
+    "message": "模型供应商"
+  },
+  "nav_advanced": {
+    "message": "高级设置"
+  },
+  "nav_about": {
+    "message": "关于"
+  },
+  "general_description": {
+    "message": "配置基本的AI服务设置和偏好"
+  },
+  "providers_description": {
+    "message": "管理AI模型供应商和相关配置"
+  },
+  "advanced_description": {
+    "message": "高级功能和性能优化设置"
+  },
+  "about_description": {
+    "message": "扩展信息和帮助文档"
+  },
+  "tab_current_provider": {
+    "message": "当前配置"
+  },
+  "tab_manage_providers": {
+    "message": "管理供应商"
+  },
+  "language_setting": {
+    "message": "界面语言",
+    "description": "语言设置标签"
+  },
+  "language_setting_description": {
+    "message": "更改语言后需要重新加载扩展",
+    "description": "语言设置说明"
+  },
+  "language_auto": {
+    "message": "自动检测",
+    "description": "自动检测语言选项"
+  },
+  "language_zh_cn": {
+    "message": "简体中文",
+    "description": "简体中文语言选项"
+  },
+  "language_en": {
+    "message": "English",
+    "description": "英文语言选项"
+  },
+  "provider_select": {
+    "message": "选择供应商"
+  },
+  "provider_select_description": {
+    "message": "选择您要使用的AI服务供应商"
+  },
+  "base_url": {
+    "message": "API基础URL"
+  },
+  "base_url_description": {
+    "message": "API服务的基础地址"
+  },
+  "base_url_placeholder": {
+    "message": "https://api.example.com/v1"
+  },
+  "api_key": {
+    "message": "API密钥",
+    "description": "API Key输入标签"
+  },
+  "api_key_description": {
+    "message": "您的API访问密钥，将安全存储"
+  },
+  "api_key_placeholder": {
+    "message": "输入您的API密钥",
+    "description": "API Key输入提示"
+  },
+  "toggle_password_visibility": {
+    "message": "显示/隐藏密码",
+    "description": "切换密码可见性按钮提示"
+  },
+  "global_settings": {
+    "message": "全局设置",
+    "description": "全局设置标题"
+  },
+  "configured_providers": {
+    "message": "已配置供应商",
+    "description": "管理供应商页面标题"
+  },
+  "add_custom_provider": {
+    "message": "添加自定义供应商",
+    "description": "添加自定义供应商按钮文本"
+  },
+  "api_key_status": {
+    "message": "API密钥状态",
+    "description": "API密钥状态标签"
+  },
+  "base_url_status": {
+    "message": "基础URL",
+    "description": "基础URL状态标签"
+  },
+  "selected_model_status": {
+    "message": "选择的模型",
+    "description": "选择的模型状态标签"
+  },
+  "configure_provider": {
+    "message": "配置此供应商",
+    "description": "配置供应商按钮文本"
+  },
+  "model_select": {
+    "message": "选择模型"
+  },
+  "model_select_description": {
+    "message": "选择要使用的AI模型"
+  },
+  "model_select_prompt": {
+    "message": "请先配置API密钥"
+  },
+  "grouping_strategy": {
+    "message": "分组策略"
+  },
+  "grouping_strategy_description": {
+    "message": "标签页分组的策略设置"
+  },
+  "grouping_strategy_placeholder": {
+    "message": "输入自定义分组策略，留空使用默认策略"
+  },
+  "default_grouping_strategy": {
+    "message": "根据标签页的内容和用途智能分组，例如将相同网站、相关主题或工作流程的标签页归类到一起。优先考虑用户的浏览模式和标签页之间的关联性。"
+  },
+  "save_settings": {
+    "message": "保存",
+    "description": "保存按钮文字"
+  },
+  "save_all_settings": {
+    "message": "保存所有设置",
+    "description": "保存所有设置按钮文字"
+  },
+  "cancel": {
+    "message": "取消",
+    "description": "取消按钮文字"
+  },
+  "provider_name": {
+    "message": "供应商名称",
+    "description": "供应商名称标签"
+  },
+  "provider_name_description": {
+    "message": "自定义供应商的显示名称",
+    "description": "供应商名称设置说明"
+  },
+  "provider_name_placeholder": {
+    "message": "输入供应商名称",
+    "description": "供应商名称输入占位符"
+  },
+  "save_provider": {
+    "message": "保存供应商",
+    "description": "保存供应商按钮文字"
+  },
+
+  "provider_base_url": {
+    "message": "API基础URL"
+  },
+  "provider_base_url_placeholder": {
+    "message": "https://api.example.com/v1"
+  },
+  "provider_endpoint": {
+    "message": "聊天端点"
+  },
+  "provider_endpoint_placeholder": {
+    "message": "/chat/completions"
+  },
+  "provider_default_models": {
+    "message": "默认模型"
+  },
+  "provider_models_placeholder": {
+    "message": "gpt-3.5-turbo\ngpt-4\ngemini-pro"
+  },
+  "provider_models_description": {
+    "message": "每行输入一个模型名称，留空将自动从API获取"
+  },
+
+  "max_tabs": {
+    "message": "最大标签页数量"
+  },
+  "auto_save": {
+    "message": "自动保存"
+  },
+  "cache_timeout": {
+    "message": "缓存超时时间（分钟）"
+  },
+  "clear_cache": {
+    "message": "清除缓存"
+  },
+  "reset_settings": {
+    "message": "重置设置"
+  },
+  "version": {
+    "message": "版本"
+  },
+  "description": {
+    "message": "描述"
+  },
+  "app_description": {
+    "message": "智能AI标签页管理扩展，支持多种AI服务供应商"
+  },
+  "features": {
+    "message": "主要功能"
+  },
+  "feature_1": {
+    "message": "多AI供应商支持"
+  },
+  "feature_2": {
+    "message": "智能模型缓存"
+  },
+  "feature_3": {
+    "message": "安全密钥存储"
+  },
+  "feature_4": {
+    "message": "自定义供应商管理"
+  },
+  "feature_5": {
+    "message": "多语言界面"
+  },
+
+  "provider_openai": {
+    "message": "OpenAI",
+    "description": "OpenAI服务商名称"
+  },
+  "provider_deepseek": {
+    "message": "DeepSeek",
+    "description": "DeepSeek服务商名称"
+  },
+  "provider_anthropic": {
+    "message": "Anthropic",
+    "description": "Anthropic服务商名称"
+  },
+  "provider_google": {
+    "message": "Google AI"
+  },
+
+  "provider_alibaba": {
+    "message": "阿里云 (通义千问)",
+    "description": "阿里云服务商名称"
+  },
+  "provider_baidu": {
+    "message": "百度 (文心一言)",
+    "description": "百度服务商名称"
+  },
+  "provider_zhipu": {
+    "message": "智谱清言 (ChatGLM)",
+    "description": "智谱AI服务商名称"
+  },
+  "provider_moonshot": {
+    "message": "月之暗面 (Kimi)",
+    "description": "月之暗面服务商名称"
+  },
+  "provider_01ai": {
+    "message": "零一万物 (Yi)",
+    "description": "零一万物服务商名称"
+  },
+  "provider_minimax": {
+    "message": "MiniMax",
+    "description": "MiniMax服务商名称"
+  },
+  "provider_doubao": {
+    "message": "字节跳动 (豆包)",
+    "description": "字节跳动服务商名称"
+  },
+  "provider_xunfei": {
+    "message": "科大讯飞 (星火)",
+    "description": "科大讯飞服务商名称"
+  },
+  "provider_sensetime": {
+    "message": "商汤科技 (日日新)",
+    "description": "商汤科技服务商名称"
+  },
+  "provider_stepfun": {
+    "message": "阶跃星辰 (Step)",
+    "description": "阶跃星辰服务商名称"
+  },
+  "provider_tencent": {
+    "message": "腾讯 (混元)",
+    "description": "腾讯服务商名称"
+  },
+  "provider_custom": {
+    "message": "自定义",
+    "description": "自定义服务商选项"
+  },
+  
+  "error_invalid_api_url": {
+    "message": "无法构建有效的API URL",
+    "description": "API URL构建失败错误消息"
+  },
+  "error_ai_settings_not_configured": {
+    "message": "AI设置未配置",
+    "description": "AI设置未配置错误消息"
+  },
+  "error_api_key_decryption_failed": {
+    "message": "API密钥解密失败，请重新配置。这可能是由于安全模块启用导致的，请重新输入您的API密钥。",
+    "description": "API密钥解密失败错误消息"
+  },
+  "error_no_tabs_to_group": {
+    "message": "没有标签页需要分组",
+    "description": "无标签页可分组消息"
+  },
+  "error_no_valid_groups": {
+    "message": "AI未返回有效的分组",
+    "description": "AI返回无效分组错误消息"
+  },
+  "log_grouping_completed": {
+    "message": "分组完成成功",
+    "description": "分组完成日志消息"
+  },
+
+  
+  "system_prompt_intro": {
+    "message": "请根据标签页信息（网址和标题）进行智能分组，将相关内容归类到一起。",
+    "description": "AI系统提示词开头"
+  },
+  "system_prompt_existing_groups": {
+    "message": "当前窗口已存在以下分组：$1\n\n请优先复用现有分组：\n- 如果新标签页与现有分组的主题相关或功能相似，请使用现有分组名称\n- 相同网站或平台的标签页应归为一组（如同一系统的不同页面）\n- 只有在内容完全不相关时才创建新分组\n- 避免创建语义相似的重复分组",
+    "description": "现有分组提示"
+  },
+  "system_prompt_forbidden_rules": {
+    "message": "请避免创建模糊的分组名称，如「其他」、「杂项」、「未分类」、「综合」、「临时」等。如果标签页无法归入有明确主题的分组，请将其排除，不要创建无意义的分组。",
+    "description": "禁止创建无意义分组的规则"
+  },
+  "system_prompt_strategy_prefix": {
+    "message": "请遵循以下分组策略：",
+    "description": "分组策略前缀"
+  },
+  "system_prompt_format_instructions": {
+    "message": "请只返回JSON格式，分组名称要自然易懂：\n\n{\n  \"groups\": [\n    {\n      \"name\": \"分组名称\",\n      \"tabs\": [\n        {\n          \"url\": \"标签页URL\",\n          \"title\": \"标签页标题\"\n        }\n      ]\n    }\n  ]\n}",
+    "description": "JSON格式输出指令"
+  },
+ "min_tabs_in_group": {
+    "message": "最小分组标签数",
+    "description": "最小分组标签数设置"
+  },
+  "min_tabs_placeholder": {
+    "message": "例如：2",
+    "description": "最小分组标签数占位符"
+  },
+  "auto_group_threshold": {
+    "message": "自动分组阈值",
+    "description": "自动分组阈值设置"
+  },
+  "auto_threshold_placeholder": {
+    "message": "例如：5",
+    "description": "自动分组阈值占位符"
+  },
+  "reuse_existing_groups": {
+    "message": "复用现有分组",
+    "description": "复用现有分组设置"
+  },
+  "min_tabs_description": {
+    "message": "每个分组的最少标签页数量",
+    "description": "最小分组标签数说明"
+  },
+  "auto_threshold_description": {
+    "message": "触发自动分组的标签页数量阈值",
+    "description": "自动分组阈值说明"
+  },
+  "max_tabs_description": {
+    "message": "同时处理的最大标签页数量",
+    "description": "最大标签页数量说明"
+  },
+  "auto_save_description": {
+    "message": "自动保存配置更改",
+    "description": "自动保存说明"
+  },
+  "cache_timeout_description": {
+    "message": "模型列表缓存的有效时间",
+    "description": "缓存超时时间说明"
+  },
+  "grouping_in_progress": {
+    "message": "正在分组中...",
+    "description": "分组进行中状态"
+  },
+  "start_grouping_failed": {
+    "message": "启动分组失败：$1",
+    "description": "启动分组失败消息"
+  },
+  "grouping_success": {
+    "message": "分组完成",
+    "description": "分组成功消息"
+  },
+  "grouping_failed": {
+    "message": "分组失败：$1",
+    "description": "分组失败消息"
+  },
+  "ungrouping_failed": {
+    "message": "取消分组失败：$1",
+    "description": "取消分组失败消息"
+  },
+  "ungroup_success": {
+    "message": "取消分组成功",
+    "description": "取消分组成功消息"
+  },
+  "smart_group_tabs": {
+    "message": "智能分组标签页",
+    "description": "智能分组按钮文本"
+  },
+  "ungroup_all_tabs": {
+    "message": "取消所有分组",
+    "description": "取消所有分组按钮文本"
+  },
+  "open_options": {
+    "message": "完整配置",
+    "description": "打开完整配置页页按钮文本"
+  },
+
+  "enable_auto_group": {
+    "message": "启用自动分组",
+    "description": "启用自动分组设置"
+  },
+  "auto_group_config": {
+    "message": "自动分组配置",
+    "description": "自动分组配置区块标题"
+  },
+  "grouping_rules_config": {
+    "message": "分组规则配置",
+    "description": "分组规则配置区块标题"
+  },
+
+  "log_api_key_decryption_failed": {
+    "message": "API密钥解密失败，请重新配置",
+    "description": "API密钥解密失败日志消息"
+  },
+  "log_api_key_decryption_failed_empty_config": {
+    "message": "API密钥解密失败，返回空配置",
+    "description": "API密钥解密失败返回空配置日志消息"
+  },
+  "error_no_active_normal_window": {
+    "message": "未找到活动的正常窗口",
+    "description": "未找到正常窗口错误消息"
+  },
+  "error_grouping_in_progress": {
+    "message": "此窗口正在进行分组操作",
+    "description": "分组操作进行中错误消息"
+  },
+  "message_grouping_process_completed": {
+    "message": "分组过程已完成",
+    "description": "分组过程完成消息"
+  },
+  "error_unknown_error": {
+    "message": "发生未知错误",
+    "description": "未知错误消息"
+  },
+  "error_grouptabs_no_windowid": {
+    "message": "groupTabs函数调用时缺少windowId参数",
+    "description": "groupTabs函数缺少windowId错误"
+  },
+  "error_cannot_group_tabs_in_window": {
+    "message": "无法在$1类型窗口中分组标签页。仅支持普通窗口。",
+    "description": "无法在特定窗口类型中分组标签页错误"
+  },
+  "error_no_normal_window_available": {
+    "message": "没有可用于分组的普通窗口",
+    "description": "无普通窗口可用错误消息"
+  },
+  "error_window_validation_failed": {
+    "message": "窗口验证失败: {error}",
+    "description": "窗口验证失败错误提示"
+  },
+  "default_group_name": {
+    "message": "AI分组",
+    "description": "默认分组名称"
+  },
+  "log_get_secure_settings_failed": {
+    "message": "getSecureSettings调用失败",
+    "description": "获取安全设置失败日志消息"
+  },
+  "log_refresh_models_failed": {
+    "message": "刷新模型列表失败",
+    "description": "刷新模型列表失败日志消息"
+  },
+  "error_refresh_models_failed": {
+    "message": "刷新模型列表失败: $1",
+    "description": "刷新模型列表失败用户消息"
+  },
+  "error_unknown_provider": {
+    "message": "未知的供应商",
+    "description": "未知供应商错误消息"
+  },
+  
+  "status_configured": {
+    "message": "已配置",
+    "description": "供应商已配置状态"
+  },
+  "status_not_configured": {
+    "message": "未配置",
+    "description": "供应商未配置状态"
+  },
+  "type_builtin": {
+    "message": "内置",
+    "description": "内置供应商类型"
+  },
+  "type_custom": {
+    "message": "自定义",
+    "description": "自定义供应商类型"
+  },
+  "type_label": {
+    "message": "类型",
+    "description": "供应商类型标签"
+  },
+  "custom_suffix": {
+    "message": "自定义",
+    "description": "自定义供应商名称后缀"
+  },
+  "model_not_selected": {
+    "message": "未选择",
+    "description": "模型未选择状态"
+  },
+  "select_model_prompt": {
+    "message": "请选择模型...",
+    "description": "选择模型提示"
+  },
+  "refresh_models_prompt": {
+    "message": "请点击刷新按钮获取模型列表",
+    "description": "刷新模型列表提示"
+  },
+  "please_select_provider": {
+    "message": "请先选择供应商",
+    "description": "请先选择供应商提示"
+  },
+  "please_configure_api_key": {
+    "message": "请先配置API密钥",
+    "description": "请先配置API密钥提示"
+  },
+  "loading_models": {
+    "message": "正在加载模型列表...",
+    "description": "正在加载模型列表状态"
+  },
+  "fetching_models": {
+    "message": "正在获取模型列表...",
+    "description": "正在获取模型列表状态"
+  },
+  "no_models_found": {
+    "message": "未找到可用模型",
+    "description": "未找到可用模型提示"
+  },
+  "no_models_check_config": {
+    "message": "未找到可用模型，请检查API配置",
+    "description": "未找到可用模型检查配置提示"
+  },
+  "models_loaded_success": {
+    "message": "成功加载 {count} 个模型",
+    "description": "模型加载成功提示"
+  },
+  "refresh_failed_retry": {
+    "message": "刷新失败，点击重试",
+    "description": "刷新失败重试提示"
+  },
+  
+  "language_switched": {
+    "message": "语言已切换",
+    "description": "语言切换成功提示"
+  },
+  "language_switch_failed": {
+    "message": "语言切换失败，请刷新页面",
+    "description": "语言切换失败提示"
+  },
+  "language_settings_saved": {
+    "message": "语言设置已保存，请刷新页面",
+    "description": "语言设置保存提示"
+  },
+  
+  "provider_config_saved": {
+    "message": "供应商配置已保存",
+    "description": "供应商配置保存成功提示"
+  },
+  "provider_saved": {
+    "message": "供应商保存成功",
+    "description": "供应商保存成功提示"
+  },
+  "provider_deleted": {
+    "message": "供应商删除成功",
+    "description": "供应商删除成功提示"
+  },
+  "save_failed": {
+    "message": "保存失败: {error}",
+    "description": "保存失败提示"
+  },
+  "delete_failed": {
+    "message": "删除失败: {error}",
+    "description": "删除失败提示"
+  },
+  "edit_provider_failed": {
+    "message": "编辑供应商失败: {error}",
+    "description": "编辑供应商失败提示"
+  },
+  "save_settings_failed": {
+    "message": "保存设置失败: {error}",
+    "description": "保存设置失败提示"
+  },
+  
+  "global_settings_saved": {
+    "message": "全局设置已保存",
+    "description": "全局设置保存成功提示"
+  },
+  "save_global_settings_failed": {
+    "message": "保存全局设置失败: {error}",
+    "description": "保存全局设置失败提示"
+  },
+  "advanced_settings_saved": {
+    "message": "高级设置已保存",
+    "description": "高级设置保存成功提示"
+  },
+  "cache_cleared": {
+    "message": "缓存已清除",
+    "description": "缓存清除成功提示"
+  },
+  "all_settings_reset": {
+    "message": "所有设置已重置",
+    "description": "设置重置成功提示"
+  },
+  
+  "form_elements_not_found": {
+    "message": "表单元素未找到",
+    "description": "表单元素未找到错误"
+  },
+  "form_elements_not_found_refresh": {
+    "message": "表单元素未找到，请刷新页面重试",
+    "description": "表单元素未找到刷新提示"
+  },
+  "form_init_failed": {
+    "message": "表单初始化失败，请刷新页面重试",
+    "description": "表单初始化失败提示"
+  },
+  "fill_required_fields": {
+    "message": "请填写供应商名称和API基础URL",
+    "description": "必填字段提示"
+  },
+  "cannot_generate_provider_key": {
+    "message": "无法生成供应商标识符，请检查供应商名称",
+    "description": "无法生成标识符错误"
+  },
+  "invalid_url_format": {
+    "message": "请输入有效的URL格式",
+    "description": "URL格式错误提示"
+  },
+  "provider_not_exist": {
+    "message": "供应商不存在，请刷新页面重试",
+    "description": "供应商不存在错误"
+  },
+  
+  "config_ui_not_found": {
+    "message": "配置界面元素未找到，请手动切换到「当前配置」标签",
+    "description": "配置界面元素未找到错误"
+  },
+  "show_config_form_failed": {
+    "message": "显示配置表单失败: {error}",
+    "description": "显示配置表单失败提示"
+  },
+  "configure_provider_failed": {
+    "message": "配置供应商失败: {error}",
+    "description": "配置供应商失败提示"
+  },
+  "operation_failed": {
+    "message": "操作失败: {error}",
+    "description": "操作失败通用提示"
+  },
+  "refresh_models_failed": {
+    "message": "刷新模型列表失败: {error}",
+    "description": "刷新模型列表失败提示"
+  },
+  "switching_language": {
+    "message": "正在切换语言...",
+    "description": "切换语言进行中提示"
+  },
+  "configuring_provider": {
+    "message": "正在配置 {provider} 供应商",
+    "description": "配置供应商进行中提示"
+  },
+  "provider_selection_saved": {
+    "message": "供应商选择已保存",
+    "description": "供应商选择保存成功提示"
+  },
+  "error_non_normal_window": {
+    "message": "只能对普通浏览器窗口中的标签页进行分组操作",
+    "description": "非普通窗口错误提示"
+  },
+  "error_no_normal_window": {
+    "message": "没有找到可用的普通浏览器窗口进行分组操作",
+    "description": "没有普通窗口错误提示"
+  },
+  "grouping_completed_with_skipped": {
+    "message": "分组完成: 处理了 {validCount} 个标签页，跳过了 {skippedCount} 个系统页面，创建了 {groupCount} 个分组",
+    "description": "包含跳过页面的分组完成消息"
+  },
+  "grouping_completed_simple": {
+    "message": "分组完成: 处理了 {validCount} 个标签页，创建了 {groupCount} 个分组",
+    "description": "简单的分组完成消息"
+  },
+  "grouping_skipped_no_valid_tabs": {
+    "message": "没有找到可分组的有效标签页，可能都是系统页面或扩展页面",
+    "description": "没有有效标签页时的提示信息"
+  },
+  "error_generate_system_prompt": {
+    "message": "生成系统提示词时出错",
+    "description": "生成系统提示词时的错误信息"
+  },
+  "fallback_system_prompt": {
+    "message": "你是一个智能标签页分组助手。请根据标签页的URL和标题对它们进行智能分组，并按照以下JSON格式返回结果：\n\n{\n  \"groups\": [\n    {\n      \"name\": \"分组名称\",\n      \"tabs\": [\n        {\n          \"url\": \"标签页URL\",\n          \"title\": \"标签页标题\"\n        }\n      ]\n    }\n  ]\n}",
+    "description": "备用的系统提示词"
+  },
+  "error_tab_data_serialization_failed": {
+    "message": "标签页数据序列化失败",
+    "description": "标签页数据序列化失败错误"
+  },
+  "error_tab_data_format_failed": {
+    "message": "标签页数据格式化失败",
+    "description": "标签页数据格式化失败错误"
+  },
+  "error_api_key_empty": {
+    "message": "API密钥为空或无效",
+    "description": "API密钥为空或无效错误"
+  },
+  "error_model_name_empty": {
+    "message": "模型名称为空或无效",
+    "description": "模型名称为空或无效错误"
+  },
+  "error_api_url_invalid": {
+    "message": "API URL格式无效",
+    "description": "API URL格式无效错误"
+  },
+  "error_api_url_format_invalid": {
+    "message": "API URL格式无效: {url}",
+    "description": "API URL格式无效错误（带URL）"
+  },
+  "error_api_key_format_invalid": {
+    "message": "API密钥格式无效",
+    "description": "API密钥格式无效错误"
+  },
+  "error_api_key_invalid_reconfigure": {
+    "message": "API密钥格式无效，请重新配置",
+    "description": "API密钥格式无效，需要重新配置"
+  },
+  "error_model_name_format_invalid": {
+    "message": "模型名称格式无效",
+    "description": "模型名称格式无效错误"
+  },
+  "error_model_name_invalid_reselect": {
+    "message": "模型名称格式无效，请重新选择模型",
+    "description": "模型名称格式无效，需要重新选择"
+  },
+  "error_json_serialization_invalid": {
+    "message": "JSON序列化结果无效",
+    "description": "JSON序列化结果无效错误"
+  },
+  "warning_request_body_too_large": {
+    "message": "请求体过大，可能导致API调用失败",
+    "description": "请求体过大警告"
+  },
+  "error_request_data_format_failed": {
+    "message": "请求数据格式化失败",
+    "description": "请求数据格式化失败错误"
+  },
+  "error_fetch_api_call_failed": {
+    "message": "Fetch API调用失败",
+    "description": "Fetch API调用失败错误"
+  },
+  "error_detailed_call_parameters": {
+    "message": "详细调用参数",
+    "description": "详细调用参数日志"
+  },
+  "error_api_call_parameters_invalid": {
+    "message": "API调用参数无效。请检查供应商配置：URL={url}, 模型={model}",
+    "description": "API调用参数无效错误"
+  },
+  "error_network_request_failed": {
+    "message": "网络请求失败: {message}",
+    "description": "网络请求失败错误"
+  },
+  "error_api_request_failed": {
+    "message": "API请求失败",
+    "description": "API请求失败错误"
+  },
+  "error_target_window_not_normal": {
+    "message": "目标窗口已不再是普通窗口，无法完成分组操作",
+    "description": "目标窗口不是普通窗口错误"
+  },
+  "error_pre_grouping_window_validation_failed": {
+    "message": "分组前窗口验证失败",
+    "description": "分组前窗口验证失败错误"
+  },
+  "error_pre_grouping_validation_failed_retry": {
+    "message": "分组前窗口验证失败，请重试",
+    "description": "分组前窗口验证失败，需要重试"
+  },
+  "error_only_normal_window_operation": {
+    "message": "只能对普通浏览器窗口中的标签页进行操作",
+    "description": "只能对普通浏览器窗口操作的错误"
+  },
+  "error_only_normal_window_grouping": {
+    "message": "只能对普通浏览器窗口中的标签页进行分组操作",
+    "description": "只能对普通浏览器窗口分组操作的错误"
+  },
+  "error_ungroup_all_failed": {
+    "message": "解除所有分组失败",
+    "description": "解除所有分组失败错误"
+  },
+  "error_ungroup_failed": {
+    "message": "解除分组失败",
+    "description": "解除分组失败错误"
+  },
+  "error_merge_to_existing_group_failed": {
+    "message": "合并到现有分组失败",
+    "description": "合并到现有分组失败错误"
+  },
+  "error_create_new_group_failed": {
+    "message": "创建新分组失败",
+    "description": "创建新分组失败错误"
+  },
+  "error_build_api_url_baseurl_empty": {
+    "message": "buildApiUrl: baseURL为空",
+    "description": "构建API URL时baseURL为空错误"
+  },
+  "error_build_api_url_baseurl_invalid": {
+    "message": "buildApiUrl: baseURL格式无效",
+    "description": "构建API URL时baseURL格式无效错误"
+  },
+  "error_get_secure_settings_failed": {
+    "message": "getSecureSettings 调用失败",
+    "description": "获取安全设置失败错误"
+  },
+  "error_get_window_info_failed": {
+    "message": "获取窗口信息失败",
+    "description": "获取窗口信息失败错误"
+  },
+  "error_target_window_not_normal_window": {
+    "message": "目标窗口不是普通窗口",
+    "description": "目标窗口不是普通窗口错误"
+  },
+  "error_system_prompt_generation_failed": {
+    "message": "系统提示词生成失败",
+    "description": "系统提示词生成失败错误"
+  },
+  "error_api_url_build_failed": {
+    "message": "API URL 构建失败",
+    "description": "API URL构建失败错误"
+  },
+  "error_json_serialization_failed": {
+    "message": "JSON序列化失败",
+    "description": "JSON序列化失败错误"
+  },
+  "error_get_target_window_info_failed": {
+    "message": "无法获取目标窗口信息，请重试",
+    "description": "无法获取目标窗口信息错误"
+  },
+  "error_system_prompt_generation_failed_text": {
+    "message": "系统提示词生成失败",
+    "description": "系统提示词生成失败错误文本"
+  }
+} 

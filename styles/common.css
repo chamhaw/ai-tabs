@@ -1,0 +1,234 @@
+/* ===========================================
+   通用基础样式 - Common Base Styles
+   =========================================== */
+
+/* General Body Styles */
+html {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+  color: #202124;
+  margin: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===========================================
+   通用按钮样式 - Common Button Styles
+   =========================================== */
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 100px;
+}
+
+.btn-primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1557b0;
+}
+
+.btn-primary:active {
+  background: #1c4587;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #5f6368;
+  border-color: #dadce0;
+}
+
+.btn-secondary:hover {
+  background: #f8f9fa;
+  border-color: #1a73e8;
+  color: #1a73e8;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-width: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon {
+  padding: 8px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  width: 36px;
+  height: 36px;
+}
+
+.btn-icon:hover {
+  border-color: #1a73e8;
+  background: #f8f9fa;
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  color: #5f6368;
+}
+
+.btn-icon:hover svg {
+  color: #1a73e8;
+}
+
+/* ===========================================
+   通用动画 - Common Animations  
+   =========================================== */
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================================
+   通用加载和状态指示器 - Common Loading & Status
+   =========================================== */
+
+.cache-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34a853;
+  box-shadow: 0 0 0 2px white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cache-indicator.visible {
+  opacity: 1;
+}
+
+/* ===========================================
+   通用表单工具按钮 - Common Form Utilities
+   =========================================== */
+
+.toggle-password-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #5f6368;
+  transition: all 0.2s ease;
+}
+
+.toggle-password-btn:hover {
+  background: #f8f9fa;
+  color: #1a73e8;
+}
+
+.toggle-password-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.toggle-password-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.refresh-btn {
+  padding: 12px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 48px;
+}
+
+.refresh-btn:hover {
+  border-color: #1a73e8;
+}
+
+.refresh-btn:active {
+  background: #f8f9fa;
+}
+
+.refresh-btn svg {
+  color: #5f6368;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover svg {
+  color: #1a73e8;
+  transform: rotate(180deg);
+}
+
+.refresh-btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+} 
