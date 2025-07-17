@@ -2059,8 +2059,28 @@ async function initializeApp() {
     await ProvidersPage.init();
     AdvancedSettings.init();
     AboutPage.init();
+    
+    // 设置分组策略的默认值作为placeholder
+    setGroupingStrategyPlaceholder();
   } catch (error) {
     console.error('AI Tabs Options: 应用初始化失败:', error);
+  }
+}
+
+// 设置分组策略输入框的placeholder为默认策略
+async function setGroupingStrategyPlaceholder() {
+  try {
+    const groupingStrategyInput = document.getElementById('groupingStrategy');
+    if (!groupingStrategyInput) return;
+    
+    // 获取默认分组策略
+    const defaultStrategy = await getMessage('default_grouping_strategy');
+    if (defaultStrategy && defaultStrategy !== 'default_grouping_strategy') {
+      // 设置placeholder为默认策略
+      groupingStrategyInput.placeholder = defaultStrategy;
+    }
+  } catch (error) {
+    console.error('设置分组策略placeholder失败:', error);
   }
 }
 

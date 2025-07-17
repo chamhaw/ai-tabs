@@ -136,7 +136,7 @@
     "message": "分组策略"
   },
   "grouping_strategy_description": {
-    "message": "标签页分组的策略设置"
+    "message": "自定义标签页分组策略，留空则使用默认策略"
   },
   "grouping_strategy_placeholder": {
     "message": "输入自定义分组策略，留空使用默认策略"

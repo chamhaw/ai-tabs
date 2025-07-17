@@ -136,7 +136,7 @@
     "message": "Grouping Strategy"
   },
   "grouping_strategy_description": {
-    "message": "Tab grouping strategy settings"
+    "message": "Custom tab grouping strategy, leave empty to use default strategy"
   },
   "grouping_strategy_placeholder": {
     "message": "Enter custom grouping strategy, leave empty to use default"
