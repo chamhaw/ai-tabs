@@ -1,0 +1,792 @@
+/* ===========================================
+   Options页面专用样式 - Options Page Styles
+   =========================================== */
+
+/* Options Page Layout */
+.options-page-body {
+  background: #ffffff;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.options-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ===========================================
+   侧边栏样式 - Sidebar Styles
+   =========================================== */
+
+.sidebar {
+  width: 280px;
+  background: #f8f9fa;
+  color: #202124;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e8eaed;
+  position: relative;
+}
+
+.sidebar-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a73e8;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 24px 0;
+}
+
+.nav-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  margin: 4px 12px;
+}
+
+.nav-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: #5f6368;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  position: relative;
+}
+
+.nav-button:hover {
+  color: #1a73e8;
+  background: #e8f0fe;
+}
+
+.nav-button.active {
+  color: #1a73e8;
+  background: #e8f0fe;
+  font-weight: 600;
+}
+
+.nav-button.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: #1a73e8;
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* ===========================================
+   主内容区样式 - Main Content Styles
+   =========================================== */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.content-page {
+  display: none;
+  flex: 1;
+  padding: 24px 40px;
+  overflow-y: auto;
+  animation: fadeInUp 0.4s ease-out;
+  height: calc(100vh - 48px);
+  box-sizing: border-box;
+}
+
+
+
+.content-page.active {
+  display: block;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.page-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a73e8;
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-header p {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.settings-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e8eaed;
+}
+
+/* ===========================================
+   供应商标签页 - Provider Tabs
+   =========================================== */
+
+.provider-tabs {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: visible;
+  border: 1px solid #e8eaed;
+}
+
+.tab-buttons {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.05);
+}
+
+.tab-button.active {
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.1);
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1a73e8 0%, #4285f4 100%);
+}
+
+.tab-content {
+  display: none;
+  padding: 20px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ===========================================
+   Options表单样式 - Options Form Styles
+   =========================================== */
+
+.form-group {
+  margin-bottom: 24px;
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  position: relative;
+  padding-left: 12px;
+  white-space: nowrap;
+  flex: none;
+  min-width: max-content;
+}
+
+.form-group label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  border-radius: 2px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="url"],
+.form-group select {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+  resize: none;
+  flex-basis: 100%;
+  order: 2;
+}
+
+.form-group input[type="number"] {
+  width: 140px;
+  min-width: 140px;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: #1a73e8;
+}
+
+.form-group select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  appearance: none;
+  padding-right: 40px;
+}
+
+.form-description {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.4;
+  font-style: italic;
+  width: 100%;
+  flex-basis: 100%;
+  order: 3;
+}
+
+/* Checkbox form group special layout */
+.form-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #1a73e8;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.form-group.checkbox-group label {
+  order: 1;
+}
+
+.form-group.checkbox-group input[type="checkbox"] {
+  order: 2;
+}
+
+/* ===========================================
+   表单工具容器 - Form Utility Containers
+   =========================================== */
+
+/* Model select container with refresh button */
+.model-select-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.model-select-container select {
+  flex: 1;
+}
+
+/* Password input container with toggle button */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+/* ===========================================
+   表单操作按钮 - Form Actions
+   =========================================== */
+
+.form-actions {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ===========================================
+   供应商配置状态 - Provider Configuration Status
+   =========================================== */
+
+.provider-config-status {
+  background: #f8f9fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.config-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.config-status-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 12px;
+}
+
+.config-label {
+  font-weight: 500;
+  color: #24292e;
+}
+
+.config-value {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.9em;
+  color: #586069;
+}
+
+.config-value.configured {
+  color: #28a745;
+}
+
+.config-value.error {
+  color: #d73a49;
+}
+
+/* Provider Configuration Form */
+.provider-config-form {
+  background: #fff;
+  border: 2px solid #1a73e8;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* ===========================================
+   供应商管理 - Providers Management
+   =========================================== */
+
+.providers-management {
+  padding: 0;
+}
+
+.providers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.providers-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.providers-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #dadce0 transparent;
+}
+
+.providers-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.providers-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.providers-items::-webkit-scrollbar-thumb {
+  background-color: #dadce0;
+  border-radius: 3px;
+}
+
+.providers-items::-webkit-scrollbar-thumb:hover {
+  background-color: #1a73e8;
+}
+
+
+
+.provider-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.provider-item:hover {
+  border-color: #1a73e8;
+}
+
+.provider-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.provider-name {
+  font-weight: 600;
+  font-size: 1.1em;
+  color: #24292e;
+  margin-bottom: 4px;
+}
+
+.provider-details {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9em;
+  color: #586069;
+  margin-bottom: 8px;
+}
+
+.provider-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.status-badge.configured {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-badge.not-configured {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.provider-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Provider form */
+.provider-form {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 20px;
+  margin-top: 16px;
+}
+
+.provider-form h4 {
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* Empty state */
+.providers-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.providers-empty svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.providers-empty div:first-of-type {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ===========================================
+   关于页面 - About Page
+   =========================================== */
+
+.about-content {
+  display: grid;
+  gap: 32px;
+}
+
+.about-item h4 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #1a73e8;
+  font-weight: 600;
+}
+
+.about-item p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.about-item ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+}
+
+.about-item li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ===========================================
+   Options状态指示器 - Options Status
+   =========================================== */
+
+#status {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid transparent;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-width: 400px;
+  animation: slideInUp 0.3s ease-out;
+}
+
+#status.success {
+  background: #e8f5e8;
+  color: #137333;
+  border-color: #34a853;
+}
+
+#status.error {
+  background: #fce8e6;
+  color: #d93025;
+  border-color: #ea4335;
+}
+
+#status.warning {
+  background: #fef7e0;
+  color: #f9ab00;
+  border-color: #fbbc04;
+}
+
+#status.info {
+  background: #e8f0fe;
+  color: #1a73e8;
+  border-color: #4285f4;
+}
+
+/* ===========================================
+   响应式设计 - Responsive Design
+   =========================================== */
+
+@media (max-width: 768px) {
+  .options-layout {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+  
+  .sidebar-nav {
+    padding: 16px 0;
+  }
+  
+  .nav-menu {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 12px;
+  }
+  
+  .nav-item {
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+  
+  .nav-button {
+    white-space: nowrap;
+    padding: 12px 16px;
+  }
+  
+  .content-page {
+    padding: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .advanced-settings-container {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Mobile form layout adjustments */
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .form-group label {
+    flex: none;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .form-group input[type="text"],
+  .form-group input[type="password"],
+  .form-group input[type="url"],
+  .form-group select {
+    flex: none;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .form-group input[type="number"] {
+    width: 120px;
+    min-width: 120px;
+  }
+  
+  .model-select-container,
+  .password-input-container {
+    flex: none;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .form-group.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .form-group.checkbox-group label {
+    flex: none;
+    width: auto;
+    min-width: auto;
+  }
+} 
