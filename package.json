@@ -6,18 +6,32 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "build": "webpack"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.254",
     "@types/jest": "^27.5.2",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "copy-webpack-plugin": "^13.0.0",
+    "css-loader": "^7.1.2",
     "jest": "^27.5.1",
+    "jest-chrome": "^0.8.0",
     "jest-environment-jsdom": "^27.5.1",
-    "jest-chrome": "^0.8.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
     "testMatch": [
       "<rootDir>/tests/**/*.test.js"
     ],
@@ -29,7 +43,11 @@
       "!node_modules/**"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1"
     }
@@ -42,4 +60,4 @@
   ],
   "author": "AI Tabs Team",
   "license": "MIT"
-} 
+}
