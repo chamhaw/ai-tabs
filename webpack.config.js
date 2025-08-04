@@ -5,7 +5,7 @@ module.exports = {
   mode: 'production',
   entry: {
     popup: path.resolve(__dirname, 'src', 'index.tsx'),
-    options: path.resolve(__dirname, 'src', 'options.tsx'),
+    options: path.resolve(__dirname, 'src', 'options-index.tsx'),
     background: path.resolve(__dirname, 'src', 'background.ts'),
   },
   output: {
@@ -60,6 +60,11 @@ module.exports = {
         {
           from: path.resolve(__dirname, 'scripts'),
           to: path.resolve(__dirname, 'dist', 'scripts'),
+        },
+        // Copy styles
+        {
+          from: path.resolve(__dirname, 'src', 'styles'),
+          to: path.resolve(__dirname, 'dist', 'styles'),
         },
       ],
     }),

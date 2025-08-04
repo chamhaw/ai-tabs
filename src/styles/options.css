@@ -790,3 +790,757 @@
     min-width: auto;
   }
 } 
+
+/* Status message styles */
+.status-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.status-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  opacity: 1;
+}
+
+.status-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  opacity: 1;
+}
+
+.status-message.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  opacity: 1;
+}
+
+/* Provider configuration styles */
+.provider-config {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.provider-config .form-group {
+  margin-bottom: 15px;
+}
+
+.provider-config input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.provider-config .btn {
+  margin-top: 10px;
+}
+
+/* Provider list styles */
+.providers-list {
+  margin-top: 20px;
+}
+
+.provider-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e1e5e9;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.provider-item .configured {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.provider-item .not-configured {
+  color: #dc3545;
+  font-weight: 500;
+} 
+
+/* Provider configuration status styles */
+.provider-config-status {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.config-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.config-status-item:last-child {
+  border-bottom: none;
+}
+
+.config-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.config-value {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.btn-small {
+  font-size: 12px;
+  padding: 6px 12px;
+  margin-top: 10px;
+}
+
+.btn-small svg {
+  margin-right: 4px;
+}
+
+/* Provider configuration form styles */
+.provider-config-form {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.provider-config-form .form-group {
+  margin-bottom: 20px;
+}
+
+/* Password input container with toggle button */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 200px;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #6c757d;
+  transition: color 0.2s ease;
+}
+
+.toggle-password-btn:hover {
+  color: #1a73e8;
+}
+
+.toggle-password-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Model select container with refresh button */
+.model-select-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.model-select-container select {
+  flex: 1;
+}
+
+.refresh-btn {
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.refresh-btn:hover {
+  background: #e9ecef;
+  border-color: #1a73e8;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #6c757d;
+  transition: transform 0.3s ease;
+}
+
+.refresh-btn:disabled svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.cache-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cache-indicator.cached {
+  background-color: #28a745;
+  opacity: 1;
+}
+
+.cache-indicator.refreshing {
+  background-color: #ffc107;
+  opacity: 1;
+  animation: pulse 1s infinite;
+}
+
+.cache-indicator.error {
+  background-color: #dc3545;
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Button styles */
+.btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover {
+  background: #1557b0;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: #1a73e8;
+}
+
+.btn-primary:hover {
+  background: #1557b0;
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+/* Status message styles (enhanced) */
+.status-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+  max-width: 300px;
+  word-wrap: break-word;
+  transform: translateX(100%);
+}
+
+.status-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.status-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.status-message.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Provider list styles (enhanced) */
+.providers-list {
+  margin-top: 20px;
+}
+
+.providers-list h4 {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.provider-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.provider-item:hover {
+  border-color: #1a73e8;
+}
+
+.provider-item .configured {
+  color: #28a745;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 2px 8px;
+  background: #d4edda;
+  border-radius: 12px;
+}
+
+.provider-item .not-configured {
+  color: #dc3545;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 2px 8px;
+  background: #f8d7da;
+  border-radius: 12px;
+}
+
+/* Advanced settings container */
+.advanced-settings-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+/* About content styles */
+.about-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.about-item {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.about-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.about-item h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.about-item p {
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.about-item a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.about-item a:hover {
+  text-decoration: underline;
+}
+
+/* Settings section improvements */
+.settings-section h4 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* ===========================================
+   管理供应商页面样式 - Provider Management Styles
+   =========================================== */
+
+.providers-management {
+  padding: 0;
+}
+
+.providers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.providers-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.providers-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: #dadce0 transparent;
+}
+
+.providers-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.providers-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.providers-items::-webkit-scrollbar-thumb {
+  background-color: #dadce0;
+  border-radius: 3px;
+}
+
+.providers-items::-webkit-scrollbar-thumb:hover {
+  background-color: #1a73e8;
+}
+
+.providers-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.providers-section {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.providers-section h4 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.provider-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.provider-item:hover {
+  border-color: #1a73e8;
+}
+
+.provider-item:last-child {
+  margin-bottom: 0;
+}
+
+.provider-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.provider-name {
+  font-weight: 600;
+  font-size: 1.1em;
+  color: #24292e;
+  margin-bottom: 4px;
+}
+
+.provider-type {
+  font-size: 12px;
+  color: #666;
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+  margin-bottom: 8px;
+}
+
+.provider-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.provider-details span {
+  font-size: 13px;
+  color: #666;
+}
+
+.provider-base-url {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.provider-endpoint {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: #f8f9fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.provider-configured {
+  font-weight: 500;
+}
+
+.provider-configured.configured {
+  color: #28a745;
+}
+
+.provider-configured.not-configured {
+  color: #dc3545;
+}
+
+.provider-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Provider form styles */
+.provider-form {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 20px;
+  margin-top: 16px;
+}
+
+.provider-form h4 {
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.provider-form .form-group {
+  margin-bottom: 20px;
+  display: block;
+}
+
+.provider-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.provider-form .form-group input,
+.provider-form .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.provider-form .form-group input:focus,
+.provider-form .form-group textarea:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.provider-form .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Empty state styles */
+.providers-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.providers-empty svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.providers-empty div:first-of-type {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.providers-empty div:last-of-type {
+  font-size: 14px;
+  color: #999;
+} 
+
+/* ===========================================
+   按钮样式优化 - Enhanced Button Styles
+   =========================================== */
+
+.btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover {
+  background: #1557b0;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: #1a73e8;
+}
+
+.btn-primary:hover {
+  background: #1557b0;
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-small svg {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
+
+.btn-icon {
+  padding: 8px 12px;
+}
+
+.btn-icon svg {
+  width: 14px;
+  height: 14px;
+} 
