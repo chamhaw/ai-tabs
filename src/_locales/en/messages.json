@@ -395,6 +395,10 @@
     "message": "Failed to start grouping: $1",
     "description": "Start grouping failed message"
   },
+  "communication_error": {
+    "message": "Communication error: $1",
+    "description": "Communication error message"
+  },
   "grouping_success": {
     "message": "Grouping completed",
     "description": "Grouping success message"
