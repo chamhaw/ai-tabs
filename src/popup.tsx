@@ -9,6 +9,24 @@ const Popup = () => {
   const [statusType, setStatusType] = useState('info');
   const [loading, setLoading] = useState(false);
 
+  // Helper function to get internationalized message using custom i18n
+  const getMessage = async (key: string, substitutions?: any): Promise<string> => {
+    try {
+      console.log('Requesting i18n message for key:', key);
+      // Send message to background script to get localized message
+      const response = await chrome.runtime.sendMessage({
+        type: 'GET_I18N_MESSAGE',
+        key: key,
+        substitutions: substitutions
+      });
+      console.log('Received i18n response:', response);
+      return response?.message || key;
+    } catch (error) {
+      console.error('Failed to get i18n message:', error);
+      return key;
+    }
+  };
+
   useEffect(() => {
     // Initialize i18n
     if (typeof window !== 'undefined' && (window as any).initI18n) {
@@ -29,14 +47,16 @@ const Popup = () => {
     });
 
     // Listen for messages from background script
-    const messageListener = (request: any) => {
+    const messageListener = async (request: any) => {
       if (request.type === 'GROUPING_FINISHED') {
         setLoading(false);
         if (request.success) {
-          setStatus('Grouping successful!');
+          const successMessage = await getMessage('log_grouping_completed');
+          setStatus(successMessage);
           setStatusType('success');
         } else {
-          setStatus(`Grouping failed: ${request.error}`);
+          const failedMessage = await getMessage('grouping_failed', request.error);
+          setStatus(failedMessage);
           setStatusType('error');
         }
       }
@@ -71,35 +91,43 @@ const Popup = () => {
     setStatus('');
   };
 
-  const handleSmartGroup = () => {
+  const handleSmartGroup = async () => {
     showSpinner();
-    setTimeout(() => showStatus('Grouping in progress...', 'info'), 0);
     
-    chrome.runtime.sendMessage({ type: 'START_GROUPING' }, (response) => {
+    // Get localized "in progress" message
+    const progressMessage = await getMessage('grouping_in_progress');
+    setTimeout(() => showStatus(progressMessage, 'info'), 0);
+    
+    chrome.runtime.sendMessage({ type: 'START_GROUPING' }, async (response) => {
       if (chrome.runtime.lastError) {
-        showStatus(`Communication error: ${chrome.runtime.lastError.message}`, 'error');
+        const errorMessage = await getMessage('communication_error', chrome.runtime.lastError.message);
+        showStatus(errorMessage, 'error');
         return;
       }
       
       if (response && !response.success) {
-        showStatus(`Grouping failed: ${response.error}`, 'error');
+        const failedMessage = await getMessage('grouping_failed', response.error);
+        showStatus(failedMessage, 'error');
       }
     });
   };
 
-  const handleUngroup = () => {
+  const handleUngroup = async () => {
     showSpinner();
     
-    chrome.runtime.sendMessage({ type: 'UNGROUP_TABS' }, (response) => {
+    chrome.runtime.sendMessage({ type: 'UNGROUP_TABS' }, async (response) => {
       if (chrome.runtime.lastError) {
-        showStatus(`Communication error: ${chrome.runtime.lastError.message}`, 'error');
+        const errorMessage = await getMessage('communication_error', chrome.runtime.lastError.message);
+        showStatus(errorMessage, 'error');
         return;
       }
       
       if (response && response.success) {
-        showStatus('Successfully ungrouped all tabs!', 'success');
+        const successMessage = await getMessage('ungroup_success');
+        showStatus(successMessage, 'success');
       } else {
-        showStatus(`Ungrouping failed: ${response?.error || 'Unknown error'}`, 'error');
+        const failedMessage = await getMessage('ungrouping_failed', response?.error || 'Unknown error');
+        showStatus(failedMessage, 'error');
       }
     });
   };
@@ -108,24 +136,44 @@ const Popup = () => {
     chrome.runtime.openOptionsPage();
   };
 
-  const handleMinTabsChange = (value: number) => {
+  const handleMinTabsChange = async (value: number) => {
     setMinTabsInGroup(value);
-    saveSettings();
+    try {
+      // Save immediately with the new value
+      await chrome.storage.local.set({ minTabsInGroup: value });
+    } catch (error) {
+      console.error('Failed to save minTabsInGroup setting:', error);
+    }
   };
 
-  const handleAutoThresholdChange = (value: number) => {
+  const handleAutoThresholdChange = async (value: number) => {
     setAutoGroupThreshold(value);
-    saveSettings();
+    try {
+      // Save immediately with the new value
+      await chrome.storage.local.set({ autoGroupThreshold: value });
+    } catch (error) {
+      console.error('Failed to save autoGroupThreshold setting:', error);
+    }
   };
 
-  const handleAutoGroupChange = (checked: boolean) => {
+  const handleAutoGroupChange = async (checked: boolean) => {
     setEnableAutoGroup(checked);
-    saveSettings();
+    try {
+      // Save immediately with the new value
+      await chrome.storage.local.set({ enableAutoGroup: checked });
+    } catch (error) {
+      console.error('Failed to save enableAutoGroup setting:', error);
+    }
   };
 
-  const handleReuseGroupsChange = (checked: boolean) => {
+  const handleReuseGroupsChange = async (checked: boolean) => {
     setReuseExistingGroups(checked);
-    saveSettings();
+    try {
+      // Save immediately with the new value
+      await chrome.storage.local.set({ reuseExistingGroups: checked });
+    } catch (error) {
+      console.error('Failed to save reuseExistingGroups setting:', error);
+    }
   };
 
   return (

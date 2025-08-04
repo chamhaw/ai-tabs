@@ -397,6 +397,10 @@
     "message": "启动分组失败：$1",
     "description": "启动分组失败消息"
   },
+  "communication_error": {
+    "message": "通信错误：$1",
+    "description": "通信错误消息"
+  },
   "grouping_success": {
     "message": "分组完成",
     "description": "分组成功消息"
