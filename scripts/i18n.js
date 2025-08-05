@@ -1,6 +1,6 @@
-// i18n.js - Service Worker compatible internationalization helper
+// i18n.js - Universal internationalization helper for both Service Worker and DOM environments
 
-// Custom i18n manager for service worker (no DOM operations)
+// Universal i18n manager that works in both Service Worker and DOM environments
 class CustomI18n {
   constructor() {
     this.messages = {};
@@ -81,10 +81,74 @@ class CustomI18n {
   }
 }
 
-// Create global instance for service worker
+// Create global instance
+let customI18n;
 if (typeof globalThis !== 'undefined') {
   globalThis.customI18n = new CustomI18n();
+  customI18n = globalThis.customI18n;
+} else {
+  customI18n = new CustomI18n();
 }
 
-// Export for use in service worker
-const customI18n = globalThis.customI18n;
+// For DOM environment, expose functions to window
+if (typeof window !== 'undefined') {
+  // Initialize function
+  window.initI18n = async function() {
+    try {
+      await customI18n.init();
+      
+      // Update DOM elements with i18n attributes
+      const elementsToUpdate = [
+        { selector: '[data-i18n]', attr: 'data-i18n', property: 'textContent' },
+        { selector: '[data-i18n-placeholder]', attr: 'data-i18n-placeholder', property: 'placeholder' },
+        { selector: '[data-i18n-title]', attr: 'data-i18n-title', property: 'title' }
+      ];
+
+      elementsToUpdate.forEach(({ selector, attr, property }) => {
+        document.querySelectorAll(selector).forEach(element => {
+          const messageKey = element.getAttribute(attr);
+          const message = customI18n.getMessage(messageKey);
+          if (message && message !== messageKey) {
+            element[property] = message;
+          }
+        });
+      });
+
+      // Update page title if it has data-i18n attribute
+      const titleElement = document.querySelector('title[data-i18n]');
+      if (titleElement) {
+        const messageKey = titleElement.getAttribute('data-i18n');
+        const message = customI18n.getMessage(messageKey);
+        if (message && message !== messageKey) {
+          document.title = message;
+        }
+      }
+
+      // Update document language
+      document.documentElement.lang = customI18n.currentLanguage || 'en';
+      
+      console.log('[I18N] Internationalization initialized successfully');
+    } catch (error) {
+      console.error('[I18N] Failed to initialize internationalization:', error);
+    }
+  };
+  
+  // Expose getMessage function
+  window.getMessage = function(key, substitutions = null) {
+    return customI18n.getMessage(key, substitutions);
+  };
+  
+  // Expose getCurrentLanguage function
+  window.getCurrentLanguage = function() {
+    return customI18n.currentLanguage || 'en';
+  };
+  
+  // Auto-initialize when DOM is loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(window.initI18n, 0);
+    });
+  } else {
+    setTimeout(window.initI18n, 0);
+  }
+}

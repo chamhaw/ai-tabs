@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import FormField from './components/FormField';
+import PasswordInput from './components/PasswordInput';
+import ModelSelect from './components/ModelSelect';
+import FormModal from './components/FormModal';
 
 // Provider configuration from original options.js
 const PROVIDER_CONFIG: { [key: string]: { name: string; baseURL: string } } = {
@@ -21,9 +25,14 @@ const PROVIDER_CONFIG: { [key: string]: { name: string; baseURL: string } } = {
 };
 
 const Options = () => {
-  const [activePage, setActivePage] = useState('general');
+  const [activePage, setActivePage] = useState(() => {
+    // 从URL哈希获取当前页面，默认为general
+    const hash = window.location.hash.slice(1);
+    return hash || 'general';
+  });
   const [activeTab, setActiveTab] = useState('current');
   const [language, setLanguage] = useState('auto');
+  const [refreshKey, setRefreshKey] = useState(0); // Force re-render when language changes
   const [selectedProvider, setSelectedProvider] = useState('');
   const [providers, setProviders] = useState<any>({});
   const [customProviders, setCustomProviders] = useState<any>({});
@@ -32,6 +41,16 @@ const Options = () => {
   const [isEditingProvider, setIsEditingProvider] = useState(false);
   const [editingProviderKey, setEditingProviderKey] = useState('');
   const [formState, setFormState] = useState<any>({});
+  
+  // 统一的供应商modal状态
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'config'>('add');
+  const [modalProviderKey, setModalProviderKey] = useState<string>('');
+  const [modalForm, setModalForm] = useState<any>({});
+
+  const [modalAvailableModels, setModalAvailableModels] = useState<string[]>([]);
+  const [modalLoadingModels, setModalLoadingModels] = useState(false);
+  
   const [globalSettings, setGlobalSettings] = useState<any>({});
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
@@ -44,7 +63,21 @@ const Options = () => {
 
   useEffect(() => {
     initializeOptions();
-  }, []);
+    
+    // 监听哈希变化
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && hash !== activePage) {
+        setActivePage(hash);
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [activePage]);
 
   const initializeOptions = async () => {
     // Initialize i18n
@@ -70,9 +103,9 @@ const Options = () => {
 
       console.log('Loaded settings:', basicResult); // Debug log
 
-      if (basicResult.userLanguage || basicResult.language) {
-        setLanguage(basicResult.userLanguage || basicResult.language);
-      }
+      // Set language from storage, fallback to auto if not set
+      const savedLanguage = basicResult.userLanguage || basicResult.language || 'auto';
+      setLanguage(savedLanguage);
       
       // Load all providers data first
       if (basicResult.providers) {
@@ -150,6 +183,8 @@ const Options = () => {
 
   const handleNavigation = (page: string) => {
     setActivePage(page);
+    // 更新URL哈希
+    window.location.hash = page;
   };
 
   const handleLanguageChange = async (newLanguage: string) => {
@@ -161,17 +196,27 @@ const Options = () => {
         userLanguage: newLanguage 
       });
       
-      // Show status message
-      showStatusMessage('Language settings saved, please refresh page', 'success');
-      
       // Re-initialize i18n if available
       if (typeof (window as any).initI18n === 'function') {
         await (window as any).initI18n();
         updateUITranslations();
       }
+      
+      // Force re-render to update all dynamic content
+      setRefreshKey(prev => prev + 1);
+      
+      // Show success message using the correct language
+      const messageKey = 'language_settings_saved';
+      const message = typeof (window as any).getMessage === 'function' 
+        ? (window as any).getMessage(messageKey) 
+        : 'Language settings saved, please refresh page';
+      showStatusMessage(message, 'success');
     } catch (error) {
       console.error('Failed to save language:', error);
-      showStatusMessage('Failed to save language settings', 'error');
+      const errorMessage = typeof (window as any).getMessage === 'function' 
+        ? (window as any).getMessage('language_switch_failed') 
+        : 'Failed to save language settings';
+      showStatusMessage(errorMessage, 'error');
     }
   };
 
@@ -213,9 +258,7 @@ const Options = () => {
     setFormState((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPasswordVisible(!showPasswordVisible);
-  };
+
 
   const refreshModels = async () => {
     if (!selectedProvider || !formState.apiKey || !formState.baseURL) {
@@ -460,16 +503,54 @@ const Options = () => {
     });
   };
 
+  const getProviderDisplayName = (providerKey: string) => {
+    const getLocalizedMessage = (key: string, fallback: string) => {
+      return typeof (window as any).getMessage === 'function' 
+        ? (window as any).getMessage(key) 
+        : fallback;
+    };
+
+    // Use i18n keys for provider names
+    return getLocalizedMessage(`provider_${providerKey}`, PROVIDER_CONFIG[providerKey]?.name || providerKey);
+  };
+
+  const getModalTitle = () => {
+    const getLocalizedMessage = (key: string, fallback: string) => {
+      return typeof (window as any).getMessage === 'function' 
+        ? (window as any).getMessage(key) 
+        : fallback;
+    };
+
+    if (modalMode === 'add') {
+      return getLocalizedMessage('add_custom_provider_modal_title', '添加自定义供应商');
+    } else {
+      const baseTitle = getLocalizedMessage('configure_provider_modal_title', '配置供应商');
+      const providerName = getProviderDisplayName(modalProviderKey);
+      return `${baseTitle} - ${providerName}`;
+    }
+  };
+
   const getCurrentProviderStatus = () => {
     if (!selectedProvider) return null;
     
     const config = providers[selectedProvider];
     const isConfigured = config && config.apiKey && config.baseURL;
     
+    // Get localized status messages
+    const getStatusMessage = (key: string, fallback: string) => {
+      return typeof (window as any).getMessage === 'function' 
+        ? (window as any).getMessage(key) 
+        : fallback;
+    };
+    
     return {
-      apiKeyStatus: config?.apiKey ? '已配置' : '未配置',
+      apiKeyStatus: config?.apiKey 
+        ? getStatusMessage('status_configured', 'Configured')
+        : getStatusMessage('status_not_configured', 'Not Configured'),
       baseURLStatus: config?.baseURL || '--',
-      selectedModelStatus: config?.selectedModel || '未选择',
+      selectedModelStatus: config?.selectedModel 
+        ? config.selectedModel
+        : getStatusMessage('model_not_selected', 'Not Selected'),
       isConfigured
     };
   };
@@ -581,6 +662,7 @@ const Options = () => {
                 {/* Provider configuration form */}
                 {selectedProvider && showProviderForm && (
                   <div id="providerConfigForm" className="provider-config-form">
+                                         <h4 data-i18n="configure_provider">配置此供应商</h4>
                     <div className="form-group">
                       <label htmlFor="baseURL" data-i18n="base_url">API基础URL</label>
                       <input 
@@ -594,74 +676,34 @@ const Options = () => {
                       <small className="form-description" data-i18n="base_url_description">API服务的基础地址</small>
                     </div>
 
-                    <div className="form-group">
-                      <label htmlFor="apiKey" data-i18n="api_key">API密钥</label>
-                      <div className="password-input-container">
-                        <input 
-                          type={showPasswordVisible ? "text" : "password"}
-                          id="apiKey"
-                          value={formState.apiKey || ''} 
-                          onChange={(e) => handleProviderConfigChange('apiKey', e.target.value)}
-                          placeholder="Enter API Key"
-                          data-i18n-placeholder="api_key_placeholder"
-                        />
-                        <button 
-                          type="button" 
-                          id="toggleApiKeyBtn" 
-                          className="toggle-password-btn" 
-                          onClick={togglePasswordVisibility}
-                          title="显示/隐藏密码"
-                        >
-                          {showPasswordVisible ? (
-                            <svg className="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94L6.06 6.06"></path>
-                              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19l-1.65-1.65"></path>
-                              <line x1="1" y1="1" x2="23" y2="23"></line>
-                            </svg>
-                          ) : (
-                            <svg className="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                      <small className="form-description" data-i18n="api_key_description">您的API访问密钥，将安全存储</small>
-                    </div>
+                    <FormField
+                      label="API密钥"
+                      htmlFor="apiKey"
+                      description="您的API访问密钥，将安全存储"
+                    >
+                      <PasswordInput
+                        id="apiKey"
+                        value={formState.apiKey || ''}
+                        onChange={(value) => handleProviderConfigChange('apiKey', value)}
+                        placeholder="Enter API Key"
+                      />
+                    </FormField>
 
-                    <div className="form-group">
-                      <label htmlFor="modelSelect" data-i18n="model_select">选择模型</label>
-                      <div className="model-select-container">
-                        <select 
-                          id="modelSelect"
-                          value={formState.selectedModel || ''}
-                          onChange={(e) => handleProviderConfigChange('selectedModel', e.target.value)}
-                        >
-                          <option value="" data-i18n="model_select_prompt">
-                            {availableModels.length > 0 ? "请选择模型" : "请先配置API密钥"}
-                          </option>
-                          {availableModels.map((model) => (
-                            <option key={model} value={model}>{model}</option>
-                          ))}
-                        </select>
-                        <button 
-                          type="button" 
-                          id="refreshModelsBtn" 
-                          className="refresh-btn" 
-                          onClick={refreshModels}
-                          disabled={loadingModels}
-                          title="刷新模型列表"
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <polyline points="1 20 1 14 7 14"></polyline>
-                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-                          </svg>
-                          <div className={`cache-indicator ${modelCacheStatus}`} id="cacheIndicator"></div>
-                        </button>
-                      </div>
-                      <small className="form-description" data-i18n="model_select_description">选择要使用的AI模型</small>
-                    </div>
+                    <FormField
+                      label="选择模型"
+                      htmlFor="modelSelect"
+                      description="选择要使用的AI模型"
+                    >
+                      <ModelSelect
+                        id="modelSelect"
+                        value={formState.selectedModel || ''}
+                        onChange={(value) => handleProviderConfigChange('selectedModel', value)}
+                        models={availableModels}
+                        onRefresh={refreshModels}
+                        loading={loadingModels}
+                        disabled={!formState.apiKey}
+                      />
+                    </FormField>
 
                     <div className="form-actions">
                       <button type="button" className="btn btn-primary" onClick={saveProviderConfig}>
@@ -691,9 +733,9 @@ const Options = () => {
                     />
                   </div>
                   <div className="form-actions">
-                    <button type="button" className="btn btn-primary" onClick={saveGlobalSettings}>
-                      <span data-i18n="save_global_settings">保存全局设置</span>
-                    </button>
+                                          <button type="button" className="btn btn-primary" onClick={saveGlobalSettings}>
+                        <span data-i18n="save">保存</span>
+                      </button>
                   </div>
                 </div>
               </div>
@@ -709,11 +751,16 @@ const Options = () => {
                     type="button" 
                     className="btn btn-primary btn-small" 
                     onClick={() => {
-                      setSelectedProvider(''); // Clear selected provider to show form
-                      setShowProviderForm(true);
-                      setIsEditingProvider(false);
-                      setEditingProviderKey('');
-                      setFormState({});
+                      // 打开添加自定义供应商的modal
+                      setModalMode('add');
+                      setModalProviderKey('');
+                      setModalForm({
+                        name: '',
+                        baseURL: '',
+                        endpoint: '/chat/completions',
+                        models: ''
+                      });
+                      setShowProviderModal(true);
                     }}
                     data-i18n="add_custom_provider"
                   >
@@ -721,7 +768,7 @@ const Options = () => {
                       <line x1="12" y1="5" x2="12" y2="19"></line>
                       <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    <span>添加自定义供应商</span>
+                    <span data-i18n="add_custom_provider">添加自定义供应商</span>
                   </button>
                 </div>
                 
@@ -784,7 +831,7 @@ const Options = () => {
                     
                     <div className="form-actions">
                       <button type="button" className="btn btn-primary" onClick={saveCustomProvider}>
-                        <span data-i18n="save_provider">保存供应商</span>
+                        <span data-i18n="save">保存</span>
                       </button>
                       <button 
                         type="button" 
@@ -934,8 +981,9 @@ const Options = () => {
               {isCustom && (
                 <span className="provider-endpoint">端点: {providerEndpoint}</span>
               )}
-              <span className={`provider-configured ${isConfigured ? 'configured' : 'not-configured'}`}>
-                状态: {isConfigured ? '已配置' : '未配置'}
+              <span className={`status-badge ${isConfigured ? 'configured' : 'not-configured'}`} 
+                    data-i18n={isConfigured ? 'status_configured' : 'status_not_configured'}>
+                {isConfigured ? '已配置' : '未配置'}
               </span>
             </div>
           </div>
@@ -988,11 +1036,34 @@ const Options = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Configuring built-in provider:', providerKey);
-                  // Switch to current tab and set provider
-                  setActiveTab('current');
-                  setSelectedProvider(providerKey);
-                  handleProviderChange(providerKey);
+                  // 打开配置供应商的modal
+                  setModalMode('config');
+                  setModalProviderKey(providerKey);
+                  
+                  // 解密API Key
+                  let decryptedApiKey = '';
+                  if (providers[providerKey]?.apiKey) {
+                    try {
+                      decryptedApiKey = atob(providers[providerKey].apiKey);
+                    } catch (e) {
+                      decryptedApiKey = providers[providerKey].apiKey;
+                    }
+                  }
+                  
+                  setModalForm({
+                    apiKey: decryptedApiKey,
+                    baseURL: providers[providerKey]?.baseURL || PROVIDER_CONFIG[providerKey]?.baseURL || '',
+                    selectedModel: providers[providerKey]?.selectedModel || ''
+                  });
+                  
+                  // 初始化模型列表
+                  if (providers[providerKey]?.models) {
+                    setModalAvailableModels(providers[providerKey].models);
+                  } else {
+                    setModalAvailableModels([]);
+                  }
+                  
+                  setShowProviderModal(true);
                 }}
                 title="配置供应商"
               >
@@ -1032,7 +1103,7 @@ const Options = () => {
               <line x1="15" y1="9" x2="15.01" y2="9"></line>
             </svg>
             <div>暂无配置的供应商</div>
-            <div>请先添加自定义供应商或在"当前配置"中配置内置供应商</div>
+                            <div data-i18n="no_providers_message">请先添加自定义供应商或在"当前配置"中配置内置供应商</div>
           </div>
         )}
       </div>
@@ -1094,6 +1165,140 @@ const Options = () => {
       setProviders(newProviders);
       chrome.storage.local.set({ providers: newProviders });
       showStatusMessage('Custom provider deleted', 'success');
+    }
+  };
+
+  // 统一的modal处理函数
+  const handleModalFormChange = (field: string, value: string) => {
+    setModalForm((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const saveFromModal = async () => {
+    if (modalMode === 'add') {
+      // 添加自定义供应商
+      if (!modalForm.name || !modalForm.baseURL) {
+        showStatusMessage('Provider name and base URL are required', 'error');
+        return;
+      }
+
+      try {
+        const providerKey = `custom-${Date.now()}`;
+        
+        const newProviderConfig = {
+          name: modalForm.name,
+          baseURL: modalForm.baseURL,
+          endpoint: modalForm.endpoint || '/chat/completions',
+          models: modalForm.models ? modalForm.models.split('\n').filter((m: string) => m.trim()) : []
+        };
+
+        const newProviders = {
+          ...providers,
+          [providerKey]: newProviderConfig
+        };
+
+        setProviders(newProviders);
+        await chrome.storage.local.set({ providers: newProviders });
+        
+        showStatusMessage('Custom provider added successfully', 'success');
+        closeModal();
+        
+      } catch (error) {
+        console.error('Failed to save custom provider:', error);
+        showStatusMessage('Failed to save custom provider', 'error');
+      }
+    } else {
+      // 配置现有供应商
+      if (!modalForm.apiKey || !modalForm.baseURL) {
+        showStatusMessage('API Key and base URL are required', 'error');
+        return;
+      }
+
+      try {
+        // 加密API密钥
+        const encryptedApiKey = btoa(modalForm.apiKey);
+        
+        const configToSave = {
+          ...modalForm,
+          apiKey: encryptedApiKey,
+          configured: true,
+          // 保留现有的模型列表，如果有的话
+          models: modalAvailableModels.length > 0 ? modalAvailableModels : providers[modalProviderKey]?.models || []
+        };
+
+        const newProviders = {
+          ...providers,
+          [modalProviderKey]: configToSave
+        };
+
+        setProviders(newProviders);
+        await chrome.storage.local.set({ providers: newProviders });
+        
+        showStatusMessage('Provider configuration saved successfully', 'success');
+        closeModal();
+        
+      } catch (error) {
+        console.error('Failed to save provider config:', error);
+        showStatusMessage('Failed to save provider configuration', 'error');
+      }
+    }
+  };
+
+  const closeModal = () => {
+    setShowProviderModal(false);
+    setModalMode('add');
+    setModalProviderKey('');
+    setModalForm({});
+    setModalAvailableModels([]);
+    setModalLoadingModels(false);
+  };
+
+  // Modal刷新模型列表
+  const refreshModalModels = async () => {
+    if (!modalForm.apiKey || !modalForm.baseURL) {
+      showStatusMessage('Please configure API Key and Base URL first', 'error');
+      return;
+    }
+
+    setModalLoadingModels(true);
+    
+    try {
+      const response = await fetch(`${modalForm.baseURL}/models`, {
+        headers: {
+          'Authorization': `Bearer ${modalForm.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const models = data.data ? data.data.map((model: any) => model.id) : [];
+      
+      // 更新modal状态
+      setModalAvailableModels(models);
+      
+      // 保存到providers配置中，以便下次打开时使用
+      if (modalMode === 'config' && modalProviderKey) {
+        const newProviders = {
+          ...providers,
+          [modalProviderKey]: {
+            ...providers[modalProviderKey],
+            models: models
+          }
+        };
+        setProviders(newProviders);
+        await chrome.storage.local.set({ providers: newProviders });
+      }
+      
+      showStatusMessage(`Successfully loaded ${models.length} models`, 'success');
+      
+    } catch (error) {
+      console.error('Failed to fetch models:', error);
+      showStatusMessage('Failed to fetch models from API', 'error');
+    } finally {
+      setModalLoadingModels(false);
     }
   };
 
@@ -1174,6 +1379,116 @@ const Options = () => {
       <main className="main-content">
         {renderPage()}
       </main>
+
+      {/* 统一的供应商modal */}
+             <FormModal
+         show={showProviderModal}
+         title={getModalTitle()}
+                 primaryButtonText={typeof (window as any).getMessage === 'function' 
+           ? (window as any).getMessage('save', '保存') 
+           : '保存'}
+        onSave={saveFromModal}
+        onCancel={closeModal}
+      >
+        {modalMode === 'add' && (
+          <FormField
+            label="供应商名称"
+            htmlFor="modalProviderName"
+            description="为您的AI供应商起一个容易识别的名称"
+            required
+          >
+            <input 
+              type="text" 
+              id="modalProviderName"
+              value={modalForm.name || ''} 
+              onChange={(e) => handleModalFormChange('name', e.target.value)}
+              placeholder="为您的AI供应商起一个容易识别的名称"
+              required
+            />
+          </FormField>
+        )}
+        
+        {modalMode === 'config' && (
+          <FormField
+            label="API Key"
+            htmlFor="modalApiKey"
+            description="您的API访问密钥，将安全存储"
+            required
+          >
+            <PasswordInput
+              id="modalApiKey"
+              value={modalForm.apiKey || ''}
+              onChange={(value) => handleModalFormChange('apiKey', value)}
+              placeholder="请输入您的API Key"
+              required
+            />
+          </FormField>
+        )}
+        
+        <FormField
+          label="API基础URL"
+          htmlFor="modalBaseURL"
+          required
+        >
+          <input 
+            type="url" 
+            id="modalBaseURL"
+            value={modalForm.baseURL || ''} 
+            onChange={(e) => handleModalFormChange('baseURL', e.target.value)}
+            placeholder="https://api.example.com/v1"
+            required
+          />
+        </FormField>
+        
+        {modalMode === 'add' && (
+          <FormField
+            label="聊天端点"
+            htmlFor="modalProviderEndpoint"
+          >
+            <input 
+              type="text" 
+              id="modalProviderEndpoint"
+              value={modalForm.endpoint || ''} 
+              onChange={(e) => handleModalFormChange('endpoint', e.target.value)}
+              placeholder="/chat/completions"
+            />
+          </FormField>
+        )}
+        
+        {modalMode === 'config' && (
+          <FormField
+            label="选择模型"
+            htmlFor="modalSelectedModel"
+            description="选择要使用的AI模型"
+          >
+            <ModelSelect
+              id="modalSelectedModel"
+              value={modalForm.selectedModel || ''}
+              onChange={(value) => handleModalFormChange('selectedModel', value)}
+              models={modalAvailableModels}
+              onRefresh={refreshModalModels}
+              loading={modalLoadingModels}
+              disabled={!modalForm.apiKey || !modalForm.baseURL}
+            />
+          </FormField>
+        )}
+        
+        {modalMode === 'add' && (
+          <FormField
+            label="默认模型"
+            htmlFor="modalProviderModels"
+            description="每行输入一个模型名称，留空将自动从API获取"
+          >
+            <textarea 
+              id="modalProviderModels" 
+              rows={3}
+              value={modalForm.models || ''} 
+              onChange={(e) => handleModalFormChange('models', e.target.value)}
+              placeholder="每行输入一个模型名称，留空将自动从API获取"
+            />
+          </FormField>
+        )}
+      </FormModal>
     </div>
   );
 };

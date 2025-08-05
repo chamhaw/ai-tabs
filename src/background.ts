@@ -145,6 +145,106 @@ self.addEventListener('activate', (event: any) => {
   event.waitUntil((self as any).clients.claim());
 });
 
+// Track last auto-group time for rate limiting
+let lastAutoGroupTime = 0;
+const AUTO_GROUP_RATE_LIMIT = 3000; // 3 seconds between auto-groups
+
+// Auto-group functionality: monitor tab count and trigger grouping
+async function checkAndTriggerAutoGroup(windowId: number) {
+  try {
+    // Get auto-group settings
+    const settings = await chrome.storage.local.get(['enableAutoGroup', 'autoGroupThreshold']);
+    const enableAutoGroup = settings.enableAutoGroup || false;
+    const autoGroupThreshold = settings.autoGroupThreshold || 5;
+    
+    console.log('Auto-group check:', { enableAutoGroup, autoGroupThreshold, windowId });
+    
+    if (!enableAutoGroup) {
+      console.log('Auto-group disabled, skipping');
+      return;
+    }
+    
+    // Rate limiting
+    const now = Date.now();
+    if (now - lastAutoGroupTime < AUTO_GROUP_RATE_LIMIT) {
+      console.log('Auto-group rate limited, skipping');
+      return;
+    }
+    
+    // Get window info
+    const window = await chrome.windows.get(windowId);
+    if (window.type !== 'normal') {
+      console.log('Not a normal window, skipping auto-group');
+      return;
+    }
+    
+    // Get all tabs and count ungrouped ones
+    const allTabs = await chrome.tabs.query({ windowId });
+    const ungroupedTabs = allTabs.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE);
+    
+    console.log(`Window ${windowId}: ${ungroupedTabs.length} ungrouped tabs (threshold: ${autoGroupThreshold})`);
+    
+    if (ungroupedTabs.length >= autoGroupThreshold) {
+      console.log('Threshold reached, triggering auto-group');
+      lastAutoGroupTime = now;
+      
+      // Check if AI settings are configured before triggering
+      const providerSettings = await getCurrentProviderConfig();
+      if (!providerSettings || !providerSettings.apiKey || !providerSettings.baseURL || !providerSettings.selectedModel) {
+        console.log('AI settings not configured, skipping auto-group');
+        return;
+      }
+      
+      // Trigger auto-grouping
+      await initiateAndGroupTabs(null, windowId);
+      console.log('Auto-group completed');
+    }
+  } catch (error) {
+    console.error('Auto-group check failed:', error);
+  }
+}
+
+// Monitor tab creation and removal for auto-grouping
+chrome.tabs.onCreated.addListener((tab) => {
+  if (tab.windowId && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('moz-extension://')) {
+    console.log('Tab created, checking auto-group trigger');
+    // Small delay to ensure tab is fully loaded
+    setTimeout(() => {
+      checkAndTriggerAutoGroup(tab.windowId!);
+    }, 500);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+  if (removeInfo.windowId && !removeInfo.isWindowClosing) {
+    console.log('Tab removed, checking auto-group trigger');
+    // Small delay to allow tab removal to complete
+    setTimeout(() => {
+      checkAndTriggerAutoGroup(removeInfo.windowId);
+    }, 100);
+  }
+});
+
+// Monitor tab attachment (when tabs are moved between windows)
+chrome.tabs.onAttached.addListener((tabId, attachInfo) => {
+  console.log('Tab attached to window, checking auto-group trigger');
+  setTimeout(() => {
+    checkAndTriggerAutoGroup(attachInfo.newWindowId);
+  }, 300);
+});
+
+// Monitor tab updates (URL changes) for existing tabs
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // Only trigger on complete page load with URL
+  if (changeInfo.status === 'complete' && tab.windowId && tab.url && 
+      !tab.url.startsWith('chrome://') && !tab.url.startsWith('moz-extension://')) {
+    console.log('Tab updated (complete), checking auto-group trigger');
+    setTimeout(() => {
+      checkAndTriggerAutoGroup(tab.windowId!);
+    }, 300);
+  }
+});
+
 // Listen for popup requests for tab information
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message:', request.type);

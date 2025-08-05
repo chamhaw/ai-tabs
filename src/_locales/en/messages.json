@@ -99,6 +99,10 @@
     "message": "Global Settings",
     "description": "Global settings title"
   },
+  "provider_configuration": {
+    "message": "Provider Configuration",
+    "description": "Provider configuration form title"
+  },
   "configured_providers": {
     "message": "Configured Providers",
     "description": "Provider management page title"
@@ -106,6 +110,18 @@
   "add_custom_provider": {
     "message": "Add Custom Provider",
     "description": "Add custom provider button text"
+  },
+  "configure_provider_modal_title": {
+    "message": "Configure Provider",
+    "description": "Configure provider modal title"
+  },
+  "add_custom_provider_modal_title": {
+    "message": "Add Custom Provider",
+    "description": "Add custom provider modal title"
+  },
+  "no_providers_message": {
+    "message": "Please add a custom provider or configure a built-in provider in \"Current Config\"",
+    "description": "Message when no providers are configured"
   },
   "api_key_status": {
     "message": "API Key Status",
