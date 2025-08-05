@@ -12,14 +12,14 @@ const Popup = () => {
   // Helper function to get internationalized message using custom i18n
   const getMessage = async (key: string, substitutions?: any): Promise<string> => {
     try {
-      console.log('Requesting i18n message for key:', key);
+  
       // Send message to background script to get localized message
       const response = await chrome.runtime.sendMessage({
         type: 'GET_I18N_MESSAGE',
         key: key,
         substitutions: substitutions
       });
-      console.log('Received i18n response:', response);
+
       return response?.message || key;
     } catch (error) {
       console.error('Failed to get i18n message:', error);

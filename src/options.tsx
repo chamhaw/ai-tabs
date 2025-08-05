@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import FormField from './components/FormField';
 import PasswordInput from './components/PasswordInput';
 import ModelSelect from './components/ModelSelect';
@@ -101,7 +101,7 @@ const Options = () => {
         'groupingStrategy'
       ]);
 
-      console.log('Loaded settings:', basicResult); // Debug log
+
 
       // Set language from storage, fallback to auto if not set
       const savedLanguage = basicResult.userLanguage || basicResult.language || 'auto';
@@ -109,24 +109,20 @@ const Options = () => {
       
       // Load all providers data first
       if (basicResult.providers) {
-        console.log('Setting providers:', basicResult.providers); // Debug log
         setProviders(basicResult.providers);
       }
       
       // Load custom providers
       if (basicResult.customProviders) {
-        console.log('Setting custom providers:', basicResult.customProviders); // Debug log
         setCustomProviders(basicResult.customProviders);
       }
       
       if (basicResult.selectedProvider) {
-        console.log('Setting selected provider:', basicResult.selectedProvider); // Debug log
         setSelectedProvider(basicResult.selectedProvider);
         
         // Load provider specific config if exists
         if (basicResult.providers && basicResult.providers[basicResult.selectedProvider]) {
           const providerConfig = basicResult.providers[basicResult.selectedProvider];
-          console.log('Loading provider config:', providerConfig); // Debug log
           
           // Decrypt API key if needed (handle encrypted data)
           let decryptedConfig = { ...providerConfig };
@@ -138,7 +134,6 @@ const Options = () => {
               }
             } catch (e) {
               // If decryption fails, use as-is
-              console.log('API key decryption failed, using as-is');
             }
           }
           
@@ -283,7 +278,7 @@ const Options = () => {
         modelsUrl = `${baseURL}/models`;
       }
       
-      console.log('Fetching models from:', modelsUrl); // Debug log
+  
       
       const response = await fetch(modelsUrl, {
         method: 'GET',
@@ -301,7 +296,6 @@ const Options = () => {
       }
 
       const data = await response.json();
-      console.log('API response:', data); // Debug log
       
       let models: string[] = [];
       
@@ -332,7 +326,7 @@ const Options = () => {
         return;
       }
       
-      console.log('Parsed models:', models); // Debug log
+
       setAvailableModels(models);
       
       // Update formState with models and save to storage
@@ -419,7 +413,7 @@ const Options = () => {
       
       showStatusMessage('Provider configuration saved successfully', 'success');
       
-      console.log('Saved provider config:', selectedProvider, configToSave); // Debug log
+  
     } catch (error) {
       console.error('Failed to save provider config:', error);
       showStatusMessage('Failed to save provider configuration', 'error');
@@ -996,7 +990,7 @@ const Options = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Editing custom provider:', providerKey);
+                
                     setIsEditingProvider(true);
                     setEditingProviderKey(providerKey);
                     setFormState(config || {});
@@ -1017,7 +1011,7 @@ const Options = () => {
                     e.preventDefault();
                     e.stopPropagation();
                     if (confirm(`确定要删除自定义供应商 "${providerName}" 吗？`)) {
-                      console.log('Deleting custom provider:', providerKey);
+                  
                       deleteCustomProvider(providerKey);
                     }
                   }}
@@ -1150,8 +1144,6 @@ const Options = () => {
       setFormState({});
       setIsEditingProvider(false);
       setEditingProviderKey('');
-      
-      console.log(`${isEditingProvider ? 'Updated' : 'Added'} custom provider:`, providerKey, newProviderConfig);
     } catch (error) {
       console.error('Failed to save custom provider:', error);
       showStatusMessage('Failed to save custom provider', 'error');
