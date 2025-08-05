@@ -56,7 +56,7 @@ module.exports = {
           from: path.resolve(__dirname, 'src', '_locales'),
           to: path.resolve(__dirname, 'dist', '_locales'),
         },
-        // Copy scripts
+        // Copy universal scripts (used by both Service Worker and DOM)
         {
           from: path.resolve(__dirname, 'scripts'),
           to: path.resolve(__dirname, 'dist', 'scripts'),

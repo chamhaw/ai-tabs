@@ -407,6 +407,13 @@
   justify-content: flex-start;
 }
 
+.form-actions .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -564,10 +571,14 @@
 }
 
 .status-badge {
-  padding: 2px 8px;
-  border-radius: 12px;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-size: 0.8em;
   font-weight: 500;
+  white-space: nowrap;
+  min-width: auto;
+  width: fit-content;
 }
 
 .status-badge.configured {
@@ -929,21 +940,150 @@
 }
 
 .provider-config-form .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-/* Password input container with toggle button */
-.password-input-container {
+.provider-config-form .form-group label {
+  flex-shrink: 0;
+  width: 120px;
+  font-weight: 600;
+  color: #202124;
+  font-size: 14px;
+  text-align: left;
+  line-height: 1.2;
+  position: relative;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+.provider-config-form .form-group label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  border-radius: 2px;
+}
+
+.provider-config-form .form-group .form-input-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 当前配置页面的密码输入框样式 */
+.provider-config-form .password-input-container {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  min-width: 200px;
+  width: 100%;
 }
 
-.password-input-container input {
+.provider-config-form .password-input-container input {
   flex: 1;
-  padding-right: 40px;
+  padding-right: 48px;
+}
+
+.provider-config-form .toggle-password-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #5f6368;
+  transition: all 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.provider-config-form .toggle-password-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.provider-config-form .toggle-password-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 当前配置页面的模型选择器分离设计 */
+.provider-config-form .model-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.provider-config-form .model-select {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.provider-config-form .model-select:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.provider-config-form .model-refresh-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 6px;
+  color: #5f6368;
+  transition: all 0.2s ease;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.provider-config-form .model-refresh-btn:hover:not(:disabled) {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.provider-config-form .model-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.provider-config-form .model-refresh-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.provider-config-form .form-description {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.4;
 }
 
 .toggle-password-btn {
@@ -1068,6 +1208,8 @@
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 6px;
 }
 
@@ -1367,6 +1509,13 @@
   color: #666;
 }
 
+.provider-details .status-badge {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.8em !important;
+  padding: 2px 6px !important;
+}
+
 .provider-base-url {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   background: #f8f9fa;
@@ -1475,6 +1624,316 @@
   font-size: 14px;
   color: #999;
 } 
+
+/* ===========================================
+   Modal样式 - Modal Styles
+   =========================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e8eaed;
+  margin-bottom: 0;
+  background: #f8f9fa;
+}
+
+.modal-header h4 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #202124;
+  flex: 1;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+  transition: all 0.2s ease;
+  margin-left: 16px;
+}
+
+.modal-close:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-body .form-group {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.modal-body .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.modal-body .form-group label {
+  flex-shrink: 0;
+  width: 120px;
+  font-weight: 600;
+  color: #202124;
+  font-size: 14px;
+  text-align: left;
+  line-height: 1.2;
+  position: relative;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+.modal-body .form-group label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  border-radius: 2px;
+}
+
+.modal-body .form-group label.required::after {
+  content: " *";
+  color: #dc3545;
+}
+
+.modal-body .form-group .form-input-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body .form-group input,
+.modal-body .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modal-body .form-group input:focus,
+.modal-body .form-group textarea:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.modal-body .form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-body .form-description {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.4;
+}
+
+/* Modal中密码输入框样式 */
+.modal-body .password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.modal-body .password-input-container input {
+  flex: 1;
+  padding-right: 48px;
+}
+
+.modal-body .toggle-password-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #5f6368;
+  transition: all 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body .toggle-password-btn:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.modal-body .toggle-password-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Modal中模型选择器的分离设计 */
+.modal-body .model-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-body .model-select {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modal-body .model-select:focus {
+  border-color: #1a73e8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+.modal-body .model-refresh-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  color: #5f6368;
+  transition: all 0.2s ease;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body .model-refresh-btn:hover:not(:disabled) {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.modal-body .model-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-body .model-refresh-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 24px 24px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e8eaed;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+  padding: 10px 24px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.modal-footer .btn-primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.modal-footer .btn-primary:hover {
+  background: #1557b0;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.modal-footer .btn-secondary {
+  background: #f8f9fa;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: #f1f3f4;
+  border-color: #c4c7c5;
+}
 
 /* ===========================================
    按钮样式优化 - Enhanced Button Styles
