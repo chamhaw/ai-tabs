@@ -99,6 +99,10 @@
     "message": "全局设置",
     "description": "全局设置标题"
   },
+  "provider_configuration": {
+    "message": "供应商配置",
+    "description": "供应商配置表单标题"
+  },
   "configured_providers": {
     "message": "已配置供应商",
     "description": "管理供应商页面标题"

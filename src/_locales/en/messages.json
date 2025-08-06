@@ -99,6 +99,10 @@
     "message": "Global Settings",
     "description": "Global settings title"
   },
+  "provider_configuration": {
+    "message": "Provider Configuration",
+    "description": "Provider configuration form title"
+  },
   "configured_providers": {
     "message": "Configured Providers",
     "description": "Provider management page title"
