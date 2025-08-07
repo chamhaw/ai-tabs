@@ -21,7 +21,7 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
 }) => {
   return (
     <div className="model-select-wrapper">
-      <select 
+      <select
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -35,9 +35,9 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
           <option key={model} value={model}>{model}</option>
         ))}
       </select>
-      <button 
-        type="button" 
-        className="model-refresh-btn" 
+      <button
+        type="button"
+        className="model-refresh-btn"
         onClick={onRefresh}
         disabled={loading || disabled}
         title="刷新模型列表"

@@ -407,6 +407,10 @@
   justify-content: flex-start;
 }
 
+<<<<<<< HEAD
+/* 表单按钮居中对齐 */
+=======
+>>>>>>> bf9928d923f7969badc2f7f10d01d70d5fe855d7
 .form-actions .btn {
   display: flex;
   align-items: center;
@@ -414,6 +418,223 @@
   text-align: center;
 }
 
+<<<<<<< HEAD
+/* 表单组对齐样式 */
+.modal-body .form-group,
+.provider-config-form .form-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modal-body .form-group label,
+.provider-config-form .form-group label {
+  flex-shrink: 0;
+  width: 120px;
+  text-align: left;
+  position: relative;
+  padding-left: 12px;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+/* 蓝色竖线图标 */
+.modal-body .form-group label::before,
+.provider-config-form .form-group label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: #1a73e8;
+  border-radius: 2px;
+}
+
+.form-input-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 密码输入容器样式 */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+}
+
+.toggle-password-btn:hover {
+  color: #1a73e8;
+}
+
+.toggle-password-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 模型选择容器样式 */
+.model-select-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.model-select {
+  flex: 1;
+}
+
+.model-refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5f6368;
+  border-radius: 4px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.model-refresh-btn:hover {
+  color: #1a73e8;
+  background: rgba(26, 115, 232, 0.1);
+}
+
+.model-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.model-refresh-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Modal样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #202124;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: #f8f9fa;
+  border-top: 1px solid #e8eaed;
+}
+
+.modal-footer .btn {
+  min-width: 100px;
+  padding: 10px 24px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.modal-footer .btn-primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.modal-footer .btn-primary:hover {
+  background: #1557b0;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.modal-footer .btn-secondary {
+  background: #f8f9fa;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: #f1f3f4;
+  border-color: #c4c7c5;
+}
+
+=======
+>>>>>>> bf9928d923f7969badc2f7f10d01d70d5fe855d7
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -558,10 +779,27 @@
 
 .provider-details {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 16px;
   font-size: 0.9em;
   color: #586069;
   margin-bottom: 8px;
+}
+
+.provider-url-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.provider-details .status-badge {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.95em !important;
+  padding: 2px 6px !important;
 }
 
 .provider-status {
@@ -571,14 +809,14 @@
 }
 
 .status-badge {
-  display: inline-block;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.8em;
+  font-size: 1em;
   font-weight: 500;
-  white-space: nowrap;
-  min-width: auto;
   width: fit-content;
+  min-width: auto;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .status-badge.configured {
@@ -1509,12 +1747,7 @@
   color: #666;
 }
 
-.provider-details .status-badge {
-  align-self: flex-start;
-  margin-top: 2px;
-  font-size: 0.8em !important;
-  padding: 2px 6px !important;
-}
+
 
 .provider-base-url {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;

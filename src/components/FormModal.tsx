@@ -35,7 +35,9 @@ const FormModal: React.FC<FormModalProps> = ({
             {primaryButtonText}
           </button>
           <button type="button" className="btn btn-secondary" onClick={onCancel} data-i18n="cancel">
-            取消
+            {typeof (window as any).getMessage === 'function'
+              ? (window as any).getMessage('cancel')
+              : '取消'}
           </button>
         </div>
       </div>

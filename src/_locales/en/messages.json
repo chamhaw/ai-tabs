@@ -111,6 +111,14 @@
     "message": "Add Custom Provider",
     "description": "Add custom provider button text"
   },
+  "custom_providers": {
+    "message": "Custom Providers",
+    "description": "Custom providers list title"
+  },
+  "builtin_providers": {
+    "message": "Built-in Providers",
+    "description": "Built-in providers list title"
+  },
   "configure_provider_modal_title": {
     "message": "Configure Provider",
     "description": "Configure provider modal title"

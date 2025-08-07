@@ -12,8 +12,8 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
   id,
   value,
   onChange,
-  placeholder = "请输入密码",
-  required = false
+  placeholder,
+  required
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -23,7 +23,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
 
   return (
     <div className="password-input-container">
-      <input 
+      <input
         type={showPassword ? "text" : "password"}
         id={id}
         value={value}
@@ -31,9 +31,9 @@ const PasswordInput: React.FC<PasswordInputProps> = ({
         placeholder={placeholder}
         required={required}
       />
-      <button 
-        type="button" 
-        className="toggle-password-btn" 
+      <button
+        type="button"
+        className="toggle-password-btn"
         onClick={togglePasswordVisibility}
         title="显示/隐藏密码"
       >

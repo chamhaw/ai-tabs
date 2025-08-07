@@ -111,6 +111,14 @@
     "message": "添加自定义供应商",
     "description": "添加自定义供应商按钮文本"
   },
+  "custom_providers": {
+    "message": "自定义供应商",
+    "description": "自定义供应商列表标题"
+  },
+  "builtin_providers": {
+    "message": "内置供应商",
+    "description": "内置供应商列表标题"
+  },
   "configure_provider_modal_title": {
     "message": "配置供应商",
     "description": "配置供应商模态框标题"
