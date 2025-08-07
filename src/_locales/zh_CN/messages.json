@@ -111,6 +111,26 @@
     "message": "添加自定义供应商",
     "description": "添加自定义供应商按钮文本"
   },
+  "custom_providers": {
+    "message": "自定义供应商",
+    "description": "自定义供应商列表标题"
+  },
+  "builtin_providers": {
+    "message": "内置供应商",
+    "description": "内置供应商列表标题"
+  },
+  "configure_provider_modal_title": {
+    "message": "配置供应商",
+    "description": "配置供应商模态框标题"
+  },
+  "add_custom_provider_modal_title": {
+    "message": "添加自定义供应商",
+    "description": "添加自定义供应商模态框标题"
+  },
+  "no_providers_message": {
+    "message": "请先添加自定义供应商或在[当前配置]中配置内置供应商",
+    "description": "没有配置供应商时的提示信息"
+  },
   "api_key_status": {
     "message": "API密钥状态",
     "description": "API密钥状态标签"

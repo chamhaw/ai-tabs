@@ -111,6 +111,26 @@
     "message": "Add Custom Provider",
     "description": "Add custom provider button text"
   },
+  "custom_providers": {
+    "message": "Custom Providers",
+    "description": "Custom providers list title"
+  },
+  "builtin_providers": {
+    "message": "Built-in Providers",
+    "description": "Built-in providers list title"
+  },
+  "configure_provider_modal_title": {
+    "message": "Configure Provider",
+    "description": "Configure provider modal title"
+  },
+  "add_custom_provider_modal_title": {
+    "message": "Add Custom Provider",
+    "description": "Add custom provider modal title"
+  },
+  "no_providers_message": {
+    "message": "Please add a custom provider or configure a built-in provider in \"Current Config\"",
+    "description": "Message when no providers are configured"
+  },
   "api_key_status": {
     "message": "API Key Status",
     "description": "API key status label"

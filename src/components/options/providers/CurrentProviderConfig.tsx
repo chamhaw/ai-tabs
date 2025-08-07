@@ -16,10 +16,25 @@ const CurrentProviderConfig = () => {
       if (selectedProvider) {
         setSelectedProvider(selectedProvider);
         if (providers && providers[selectedProvider]) {
-          setProviderConfig(providers[selectedProvider]);
-          setFormState(providers[selectedProvider]);
-          if (providers[selectedProvider].models) {
-            setModels(providers[selectedProvider].models);
+          const providerConfig = providers[selectedProvider];
+          
+          // Decrypt API key if needed (handle encrypted data)
+          let decryptedConfig = { ...providerConfig };
+          if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
+            try {
+              // Try to decrypt if it looks like base64 encoded
+              if (providerConfig.apiKey.length > 20 && !providerConfig.apiKey.includes(' ')) {
+                decryptedConfig.apiKey = atob(providerConfig.apiKey);
+              }
+            } catch (e) {
+              // If decryption fails, use as-is
+            }
+          }
+          
+          setProviderConfig(decryptedConfig);
+          setFormState(decryptedConfig);
+          if (providerConfig.models) {
+            setModels(providerConfig.models);
           }
         }
       }
@@ -35,10 +50,25 @@ const CurrentProviderConfig = () => {
     // Load provider config
     chrome.storage.local.get('providers', (result) => {
       if (result.providers && result.providers[provider]) {
-        setProviderConfig(result.providers[provider]);
-        setFormState(result.providers[provider]);
-        if (result.providers[provider].models) {
-          setModels(result.providers[provider].models);
+        const providerConfig = result.providers[provider];
+        
+        // Decrypt API key if needed (handle encrypted data)
+        let decryptedConfig = { ...providerConfig };
+        if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
+          try {
+            // Try to decrypt if it looks like base64 encoded
+            if (providerConfig.apiKey.length > 20 && !providerConfig.apiKey.includes(' ')) {
+              decryptedConfig.apiKey = atob(providerConfig.apiKey);
+            }
+          } catch (e) {
+            // If decryption fails, use as-is
+          }
+        }
+        
+        setProviderConfig(decryptedConfig);
+        setFormState(decryptedConfig);
+        if (providerConfig.models) {
+          setModels(providerConfig.models);
         } else {
           setModels([]);
         }
@@ -60,9 +90,24 @@ const CurrentProviderConfig = () => {
   const handleSaveConfig = () => {
     chrome.storage.local.get('providers', (result) => {
       const providers = result.providers || {};
-      providers[selectedProvider] = formState;
+      
+      // Prepare config to save
+      const configToSave = { ...formState };
+      
+      // Encrypt API key if provided
+      if (configToSave.apiKey && configToSave.apiKey.trim()) {
+        try {
+          // Simple base64 encoding for now (matches original implementation)
+          configToSave.apiKey = btoa(configToSave.apiKey.trim());
+        } catch (e) {
+          console.error('API key encryption failed:', e);
+          return;
+        }
+      }
+      
+      providers[selectedProvider] = configToSave;
       chrome.storage.local.set({ providers }, () => {
-        setProviderConfig(formState);
+        setProviderConfig(formState); // Keep decrypted version in UI
         setShowConfigForm(false);
       });
     });
