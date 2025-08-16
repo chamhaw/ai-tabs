@@ -178,7 +178,7 @@ const Popup = () => {
 
   return (
     <div className="popup-container">
-      {/* 主菜单区域 */}
+      {/* Main menu */}
       <div className="menu-list">
         <button 
           className="menu-item" 
@@ -191,7 +191,7 @@ const Popup = () => {
               <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path>
             </svg>
           </div>
-          <span className="menu-item-text" data-i18n="smart_group_tabs">智能分组标签页</span>
+          <span className="menu-item-text" data-i18n="smart_group_tabs">Smart group tabs</span>
         </button>
         
         <button 
@@ -206,13 +206,13 @@ const Popup = () => {
               <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
             </svg>
           </div>
-          <span className="menu-item-text" data-i18n="ungroup_all_tabs">取消所有分组</span>
+          <span className="menu-item-text" data-i18n="ungroup_all_tabs">Ungroup all tabs</span>
         </button>
       </div>
 
-      {/* 配置设置区域 */}
+      {/* Settings area */}
       <div className="settings-container">
-        {/* 自动分组配置 */}
+        {/* Auto grouping settings */}
         <div className="settings-group">
           <div className="settings-group-header">
             <div className="settings-group-icon">
@@ -222,11 +222,11 @@ const Popup = () => {
                 <path d="M2 12l10 5 10-5"></path>
               </svg>
             </div>
-            <span className="settings-group-title" data-i18n="auto_group_config">自动分组配置</span>
+            <span className="settings-group-title" data-i18n="auto_group_config">Auto group</span>
           </div>
           <div className="settings-group-content">
             <div className="form-group checkbox-group">
-              <label htmlFor="auto-group-checkbox" data-i18n="enable_auto_group">启用自动分组</label>
+              <label htmlFor="auto-group-checkbox" data-i18n="enable_auto_group">Enable auto group</label>
               <input 
                 type="checkbox" 
                 id="auto-group-checkbox"
@@ -236,7 +236,7 @@ const Popup = () => {
             </div>
             <div className="form-group has-description">
               <div className="form-main">
-                <label htmlFor="auto-threshold-input" data-i18n="auto_group_threshold">自动分组阈值</label>
+                <label htmlFor="auto-threshold-input" data-i18n="auto_group_threshold">Auto group threshold</label>
                 <input 
                   type="number" 
                   id="auto-threshold-input" 
@@ -247,12 +247,12 @@ const Popup = () => {
                   data-i18n-placeholder="auto_threshold_placeholder"
                 />
               </div>
-              <span className="form-description" data-i18n="auto_threshold_description">触发自动分组的标签页数量阈值</span>
+              <span className="form-description" data-i18n="auto_threshold_description">Threshold to trigger auto grouping</span>
             </div>
           </div>
         </div>
 
-        {/* 分组规则配置 */}
+        {/* Grouping rules settings */}
         <div className="settings-group">
           <div className="settings-group-header">
             <div className="settings-group-icon">
@@ -268,12 +268,12 @@ const Popup = () => {
                 <line x1="17" y1="16" x2="23" y2="16"></line>
               </svg>
             </div>
-            <span className="settings-group-title" data-i18n="grouping_rules_config">分组规则配置</span>
+            <span className="settings-group-title" data-i18n="grouping_rules_config">Grouping rules</span>
           </div>
           <div className="settings-group-content">
             <div className="form-group has-description">
               <div className="form-main">
-                <label htmlFor="min-tabs-input" data-i18n="min_tabs_in_group">最小分组标签数</label>
+                <label htmlFor="min-tabs-input" data-i18n="min_tabs_in_group">Min tabs per group</label>
                 <input 
                   type="number" 
                   id="min-tabs-input" 
@@ -284,10 +284,10 @@ const Popup = () => {
                   data-i18n-placeholder="min_tabs_placeholder"
                 />
               </div>
-              <span className="form-description" data-i18n="min_tabs_description">每个分组的最少标签页数量</span>
+              <span className="form-description" data-i18n="min_tabs_description">Minimum tabs count per group</span>
             </div>
             <div className="form-group checkbox-group">
-              <label htmlFor="reuse-groups-checkbox" data-i18n="reuse_existing_groups">复用现有分组</label>
+              <label htmlFor="reuse-groups-checkbox" data-i18n="reuse_existing_groups">Reuse existing groups</label>
               <input 
                 type="checkbox" 
                 id="reuse-groups-checkbox"
@@ -299,21 +299,21 @@ const Popup = () => {
         </div>
       </div>
 
-      {/* 加载动画 */}
+      {/* Loading spinner */}
       {loading && (
         <div className="spinner visible" id="spinner"></div>
       )}
 
-      {/* 状态显示 */}
+      {/* Status display */}
       {status && (
         <div id="status" className={statusType} style={{ display: 'block' }}>
           {status}
         </div>
       )}
       
-      {/* 底部链接 */}
+      {/* Footer link */}
       <div className="footer-link">
-        <a href="#" id="options-button" onClick={handleOptions} data-i18n="open_options">完整配置</a>
+        <a href="#" id="options-button" onClick={handleOptions} data-i18n="open_options">Open options</a>
       </div>
     </div>
   );
