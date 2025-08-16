@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "智能AI标签页管理扩展，支持多种AI服务供应商",
   "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "build:dev": "webpack --config webpack.config.dev.js",
+    "dev": "webpack --config webpack.config.dev.js --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "build": "webpack"
+    "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.254",
@@ -36,9 +38,10 @@
       "<rootDir>/tests/**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "*.js",
+      "src/**/*.{ts,tsx,js,jsx}",
       "scripts/*.js",
-      "!popup.js",
+      "!**/*.d.ts",
+      "!**/*.test.{ts,tsx,js,jsx}",
       "!tests/**",
       "!node_modules/**"
     ],

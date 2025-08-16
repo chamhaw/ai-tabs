@@ -3,26 +3,37 @@ import FormField from './components/FormField';
 import PasswordInput from './components/PasswordInput';
 import ModelSelect from './components/ModelSelect';
 import FormModal from './components/FormModal';
+import { requestProviderPermissions, hasProviderPermissions } from './utils/permissions';
 
-// Provider configuration from original options.js
-const PROVIDER_CONFIG: { [key: string]: { name: string; baseURL: string } } = {
-  'openai': { name: 'OpenAI', baseURL: 'https://api.openai.com/v1' },
-  'deepseek': { name: 'DeepSeek', baseURL: 'https://api.deepseek.com/v1' },
-  'anthropic': { name: 'Anthropic', baseURL: 'https://api.anthropic.com/v1' },
-  'google': { name: 'Google AI', baseURL: 'https://generativelanguage.googleapis.com/v1beta' },
-  'alibaba': { name: '阿里云通义千问', baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
-  'baidu': { name: '百度文心一言', baseURL: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1' },
-  'zhipu': { name: '智谱AI', baseURL: 'https://open.bigmodel.cn/api/paas/v4' },
-  'moonshot': { name: 'Moonshot AI', baseURL: 'https://api.moonshot.cn/v1' },
-  '01ai': { name: '零一万物', baseURL: 'https://api.lingyiwanwu.com/v1' },
-  'minimax': { name: 'MiniMax', baseURL: 'https://api.minimax.chat/v1' },
-  'doubao': { name: '豆包', baseURL: 'https://ark.cn-beijing.volces.com/api/v3' },
-  'xunfei': { name: '讯飞星火', baseURL: 'https://spark-api-open.xf-yun.com/v1' },
-  'sensetime': { name: '商汤科技', baseURL: 'https://api.sensenova.cn/v1' },
-  'stepfun': { name: '阶跃星辰', baseURL: 'https://api.stepfun.com/v1' },
-  'tencent': { name: '腾讯混元', baseURL: 'https://hunyuan.tencentcloudapi.com' },
-  'custom': { name: '自定义', baseURL: '' }
-};
+import { PROVIDERS, getProvider, createProviderConfig } from './config/providers';
+
+// Type definitions for component state
+interface FormState {
+  baseURL: string;
+  apiKey: string;
+  selectedModel: string;
+  models: string[];
+  name?: string;
+  endpoint?: string;
+  configured?: boolean;
+}
+
+interface GlobalSettings {
+  groupingStrategy?: string;
+}
+
+interface AdvancedSettings {
+  maxTabs: number;
+  autoSave: boolean;
+  cacheTimeout: number;
+}
+
+interface ModalForm {
+  name: string;
+  baseURL: string;
+  apiKey: string;
+  selectedModel: string;
+}
 
 const Options = () => {
   // Initialize activePage from URL hash or default to 'general'
@@ -102,44 +113,40 @@ const Options = () => {
         'groupingStrategy'
       ]);
 
-      console.log('Loaded settings:', basicResult); // Debug log
-
       if (basicResult.userLanguage || basicResult.language) {
         setLanguage(basicResult.userLanguage || basicResult.language);
       }
       
       // Load all providers data first
       if (basicResult.providers) {
-        console.log('Setting providers:', basicResult.providers); // Debug log
         setProviders(basicResult.providers);
       }
       
       // Load custom providers
       if (basicResult.customProviders) {
-        console.log('Setting custom providers:', basicResult.customProviders); // Debug log
         setCustomProviders(basicResult.customProviders);
       }
       
       if (basicResult.selectedProvider) {
-        console.log('Setting selected provider:', basicResult.selectedProvider); // Debug log
         setSelectedProvider(basicResult.selectedProvider);
         
         // Load provider specific config if exists
         if (basicResult.providers && basicResult.providers[basicResult.selectedProvider]) {
           const providerConfig = basicResult.providers[basicResult.selectedProvider];
-          console.log('Loading provider config:', providerConfig); // Debug log
           
           // Decrypt API key if needed (handle encrypted data)
           let decryptedConfig = { ...providerConfig };
           if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
             try {
-              // Try to decrypt if it looks like base64 encoded
-              if (providerConfig.apiKey.length > 20 && !providerConfig.apiKey.includes(' ')) {
-                decryptedConfig.apiKey = atob(providerConfig.apiKey);
+              if (typeof (window as any).secureStorage !== 'undefined' && (window as any).secureStorage.encryption && typeof (window as any).secureStorage.encryption.decrypt === 'function') {
+                decryptedConfig.apiKey = (window as any).secureStorage.encryption.decrypt(providerConfig.apiKey);
+              } else {
+                console.error('secureStorage not available in options page');
+                decryptedConfig.apiKey = '';
               }
             } catch (e) {
-              // If decryption fails, use as-is
-              console.log('API key decryption failed, using as-is');
+              console.error('API key decryption failed');
+              decryptedConfig.apiKey = '';
             }
           }
           
@@ -150,18 +157,23 @@ const Options = () => {
           }
         } else {
           // If selected provider exists but no config, set default config
-          const defaultConfig = PROVIDER_CONFIG[basicResult.selectedProvider] || {};
-          setFormState({
-            baseURL: defaultConfig.baseURL || '',
-            apiKey: '',
-            selectedModel: '',
-            models: []
-          });
+          const provider = getProvider(basicResult.selectedProvider);
+          if (provider) {
+            const defaultConfig = createProviderConfig(basicResult.selectedProvider);
+            setFormState(defaultConfig);
+          } else {
+            setFormState({
+              baseURL: '',
+              apiKey: '',
+              selectedModel: '',
+              models: []
+            });
+          }
         }
       }
       
       if (basicResult.groupingStrategy) {
-        setGlobalSettings((prev: any) => ({ ...prev, groupingStrategy: basicResult.groupingStrategy }));
+        setGlobalSettings((prev: GlobalSettings) => ({ ...prev, groupingStrategy: basicResult.groupingStrategy }));
       }
 
       // Load advanced settings
@@ -242,13 +254,17 @@ const Options = () => {
         }
       } else {
         // Set default config for new provider
-        const defaultConfig = PROVIDER_CONFIG[provider] || {};
-        setFormState({
-          baseURL: defaultConfig.baseURL || '',
-          apiKey: '',
-          selectedModel: '',
-          models: []
-        });
+        try {
+          const defaultConfig = createProviderConfig(provider);
+          setFormState(defaultConfig);
+        } catch (error) {
+          setFormState({
+            baseURL: '',
+            apiKey: '',
+            selectedModel: '',
+            models: []
+          });
+        }
         setAvailableModels([]);
       }
       
@@ -261,7 +277,7 @@ const Options = () => {
   };
 
   const handleProviderConfigChange = (field: string, value: string) => {
-    setFormState((prev: any) => ({ ...prev, [field]: value }));
+    setFormState((prev: FormState) => ({ ...prev, [field]: value }));
   };
 
   const togglePasswordVisibility = () => {
@@ -386,14 +402,29 @@ const Options = () => {
     if (!selectedProvider) return;
     
     try {
+      // Check and request permissions before saving
+      const customBaseURL = selectedProvider === 'custom' ? formState.baseURL : undefined;
+      const hasPermissions = await hasProviderPermissions(selectedProvider, customBaseURL);
+      
+      if (!hasPermissions) {
+        const granted = await requestProviderPermissions(selectedProvider, customBaseURL);
+        if (!granted) {
+          showStatusMessage('Network permissions required for this provider', 'error');
+          return;
+        }
+      }
+
       // Prepare config to save
       const configToSave = { ...formState };
       
       // Encrypt API key if provided
       if (configToSave.apiKey && configToSave.apiKey.trim()) {
         try {
-          // Simple base64 encoding for now (matches original implementation)
-          configToSave.apiKey = btoa(configToSave.apiKey.trim());
+          if (typeof (window as any).secureStorage !== 'undefined' && (window as any).secureStorage.encryption && typeof (window as any).secureStorage.encryption.encrypt === 'function') {
+            configToSave.apiKey = (window as any).secureStorage.encryption.encrypt(configToSave.apiKey.trim());
+          } else {
+            throw new Error('secureStorage not available');
+          }
         } catch (e) {
           console.error('API key encryption failed:', e);
           showStatusMessage('API key encryption failed', 'error');
@@ -408,8 +439,9 @@ const Options = () => {
       if (!configToSave.name) {
         configToSave.name = getProviderDisplayName(selectedProvider);
       }
-      if (!configToSave.baseURL && PROVIDER_CONFIG[selectedProvider]?.baseURL) {
-        configToSave.baseURL = PROVIDER_CONFIG[selectedProvider].baseURL;
+      const provider = getProvider(selectedProvider);
+      if (!configToSave.baseURL && provider?.baseURL) {
+        configToSave.baseURL = provider.baseURL;
       }
       
       const updatedProviders = {
@@ -435,7 +467,7 @@ const Options = () => {
   };
 
   const handleGlobalSettingsChange = (field: string, value: string) => {
-    setGlobalSettings((prev: any) => ({ ...prev, [field]: value }));
+    setGlobalSettings((prev: GlobalSettings) => ({ ...prev, [field]: value }));
   };
 
   const saveGlobalSettings = async () => {
@@ -519,7 +551,8 @@ const Options = () => {
     };
 
     // Use i18n keys for provider names
-    return getLocalizedMessage(`provider_${providerKey}`, PROVIDER_CONFIG[providerKey]?.name || providerKey);
+    const provider = getProvider(providerKey);
+    return getLocalizedMessage(`provider_${providerKey}`, provider?.name || providerKey);
   };
 
   const getModalTitle = () => {
@@ -530,9 +563,9 @@ const Options = () => {
     };
 
     if (modalMode === 'add') {
-      return getLocalizedMessage('add_custom_provider_modal_title', '添加自定义供应商');
+      return getLocalizedMessage('add_custom_provider_modal_title', 'Add custom provider');
     } else {
-      const baseTitle = getLocalizedMessage('configure_provider_modal_title', '配置供应商');
+      const baseTitle = getLocalizedMessage('configure_provider_modal_title', 'Configure provider');
       const providerName = getProviderDisplayName(modalProviderKey);
       return `${baseTitle} - ${providerName}`;
     }
@@ -566,23 +599,23 @@ const Options = () => {
   const renderGeneralPage = () => (
     <div className="content-page active" id="page-general">
       <div className="page-header">
-        <h3 data-i18n="nav_general">常规设置</h3>
-        <p data-i18n="general_description">配置基本的AI服务设置和偏好</p>
+        <h3 data-i18n="nav_general">General</h3>
+        <p data-i18n="general_description">Configure basic AI service settings and preferences</p>
       </div>
       
       <div className="settings-section">
         <div className="form-group">
-          <label htmlFor="languageSelect" data-i18n="language_setting">界面语言</label>
+          <label htmlFor="languageSelect" data-i18n="language_setting">Language</label>
           <select 
             id="languageSelect" 
             value={language} 
             onChange={(e) => handleLanguageChange(e.target.value)}
           >
-            <option value="auto" data-i18n="language_auto">自动检测</option>
+            <option value="auto" data-i18n="language_auto">Auto</option>
             <option value="zh_CN" data-i18n="language_zh_cn">简体中文</option>
             <option value="en" data-i18n="language_en">English</option>
           </select>
-          <small className="form-description" data-i18n="language_setting_description">更改语言后需要重新加载扩展</small>
+          <small className="form-description" data-i18n="language_setting_description">Reload extension after changing language</small>
         </div>
       </div>
     </div>
@@ -594,8 +627,8 @@ const Options = () => {
     return (
       <div className="content-page active" id="page-providers">
         <div className="page-header">
-          <h3 data-i18n="nav_providers">模型供应商</h3>
-          <p data-i18n="providers_description">管理AI模型供应商和相关配置</p>
+          <h3 data-i18n="nav_providers">Providers</h3>
+          <p data-i18n="providers_description">Manage AI model providers and configuration</p>
         </div>
 
         <div className="provider-tabs">
@@ -605,14 +638,14 @@ const Options = () => {
               onClick={() => setActiveTab('current')}
               data-i18n="tab_current_provider"
             >
-              当前配置
+              Current
             </button>
             <button 
               className={`tab-button ${activeTab === 'manage' ? 'active' : ''}`} 
               onClick={() => setActiveTab('manage')}
               data-i18n="tab_manage_providers"
             >
-              管理供应商
+              Manage
             </button>
           </div>
 
@@ -623,15 +656,15 @@ const Options = () => {
                   <label htmlFor="providerSelect" data-i18n="provider_select">
                     {typeof (window as any).getMessage === 'function'
                       ? (window as any).getMessage('provider_select')
-                      : '选择供应商'}
+                      : 'Select provider'}
                   </label>
                   <select 
                     id="providerSelect" 
                     value={selectedProvider} 
                     onChange={(e) => handleProviderChange(e.target.value)}
                   >
-                    <option value="">请选择供应商</option>
-                    {Object.keys(PROVIDER_CONFIG).map(key => (
+                    <option value="">Please select</option>
+                    {Object.keys(PROVIDERS).map(key => (
                       <option key={key} value={key}>
                         {getProviderDisplayName(key)}
                       </option>
@@ -640,7 +673,7 @@ const Options = () => {
                   <small className="form-description" data-i18n="provider_select_description">
                     {typeof (window as any).getMessage === 'function'
                       ? (window as any).getMessage('provider_select_description')
-                      : '选择您要使用的AI服务供应商'}
+                      : 'Choose the AI provider to use'}
                   </small>
                 </div>
                 
@@ -651,7 +684,7 @@ const Options = () => {
                       <span className="config-label" data-i18n="api_key_status">
                         {typeof (window as any).getMessage === 'function'
                           ? (window as any).getMessage('api_key_status')
-                          : 'API密钥状态'}
+                          : 'API Key Status'}
                       </span>
                       <span id="apiKeyStatus" className="config-value">{providerStatus.apiKeyStatus}</span>
                     </div>
@@ -659,7 +692,7 @@ const Options = () => {
                       <span className="config-label" data-i18n="base_url_status">
                         {typeof (window as any).getMessage === 'function'
                           ? (window as any).getMessage('base_url_status')
-                          : '基础URL'}
+                          : 'Base URL'}
                       </span>
                       <span id="baseURLStatus" className="config-value">{providerStatus.baseURLStatus}</span>
                     </div>
@@ -667,7 +700,7 @@ const Options = () => {
                       <span className="config-label" data-i18n="selected_model_status">
                         {typeof (window as any).getMessage === 'function'
                           ? (window as any).getMessage('selected_model_status')
-                          : '选择的模型'}
+                          : 'Selected Model'}
                       </span>
                       <span id="selectedModelStatus" className="config-value">{providerStatus.selectedModelStatus}</span>
                     </div>
@@ -685,7 +718,7 @@ const Options = () => {
                       <span data-i18n="configure_provider">
                         {typeof (window as any).getMessage === 'function'
                           ? (window as any).getMessage('configure_provider')
-                          : '配置此供应商'}
+                          : 'Configure'}
                       </span>
                     </button>
                   </div>
@@ -697,12 +730,12 @@ const Options = () => {
                     <h4 data-i18n="provider_configuration">
                       {typeof (window as any).getMessage === 'function'
                         ? (window as any).getMessage('provider_configuration')
-                        : '供应商配置'}
+                        : 'Provider configuration'}
                     </h4>
                     
                     <FormField
                       key={`baseURL-${refreshKey}`}
-                      label="API基础URL"
+                      label="API Base URL"
                       labelI18nKey="base_url"
                       htmlFor="baseURL"
                       descriptionI18nKey="base_url_description"
@@ -720,7 +753,7 @@ const Options = () => {
 
                     <FormField
                       key={`apiKey-${refreshKey}`}
-                      label="API密钥"
+                      label="API Key"
                       labelI18nKey="api_key"
                       htmlFor="apiKey"
                       descriptionI18nKey="api_key_description"
@@ -737,7 +770,7 @@ const Options = () => {
 
                     <FormField
                       key={`modelSelect-${refreshKey}`}
-                      label="选择模型"
+                      label="Model"
                       labelI18nKey="model_select"
                       htmlFor="modelSelect"
                       descriptionI18nKey="model_select_description"
@@ -755,14 +788,14 @@ const Options = () => {
 
                     <div className="form-actions">
                       <button type="button" className="btn btn-primary" onClick={saveProviderConfig}>
-                        <span data-i18n="save">保存</span>
+                        <span data-i18n="save">Save</span>
                       </button>
                       <button 
                         type="button" 
                         className="btn btn-secondary" 
                         onClick={() => setShowProviderForm(false)}
                       >
-                        <span data-i18n="cancel">取消</span>
+                        <span data-i18n="cancel">Cancel</span>
                       </button>
                     </div>
                   </div>
@@ -772,13 +805,13 @@ const Options = () => {
                   <h4 data-i18n="global_settings">
                     {typeof (window as any).getMessage === 'function'
                       ? (window as any).getMessage('global_settings')
-                      : '全局设置'}
+                      : 'Global settings'}
                   </h4>
                   <div className="form-group">
                     <label htmlFor="groupingStrategy" data-i18n="grouping_strategy">
                       {typeof (window as any).getMessage === 'function'
                         ? (window as any).getMessage('grouping_strategy')
-                        : '分组策略'}
+                        : 'Grouping strategy'}
                     </label>
                     <input 
                       type="text" 
@@ -790,7 +823,7 @@ const Options = () => {
                   </div>
                   <div className="form-actions">
                     <button type="button" className="btn btn-primary" onClick={saveGlobalSettings}>
-                                              <span data-i18n="save">保存</span>
+                                              <span data-i18n="save">Save</span>
                     </button>
                   </div>
                 </div>
@@ -805,7 +838,7 @@ const Options = () => {
                   <h4 data-i18n="configured_providers">
                     {typeof (window as any).getMessage === 'function'
                       ? (window as any).getMessage('configured_providers')
-                      : '已配置供应商'}
+                      : 'Configured providers'}
                   </h4>
                   <button 
                     type="button" 
@@ -820,7 +853,7 @@ const Options = () => {
                     <span data-i18n="add_custom_provider">
                       {typeof (window as any).getMessage === 'function'
                         ? (window as any).getMessage('add_custom_provider')
-                        : '添加自定义供应商'}
+                        : 'Add custom provider'}
                     </span>
                   </button>
                 </div>
@@ -841,13 +874,13 @@ const Options = () => {
   const renderAdvancedPage = () => (
     <div className="content-page active" id="page-advanced">
       <div className="page-header">
-        <h3 data-i18n="nav_advanced">高级设置</h3>
-        <p data-i18n="advanced_description">高级功能和性能优化设置</p>
+        <h3 data-i18n="nav_advanced">Advanced</h3>
+        <p data-i18n="advanced_description">Advanced features and performance settings</p>
       </div>
       <div className="settings-section">
         <div className="advanced-settings-container">
           <div className="form-group">
-            <label htmlFor="maxTabs" data-i18n="max_tabs">最大标签页数量</label>
+            <label htmlFor="maxTabs" data-i18n="max_tabs">Max tabs</label>
             <input 
               type="number" 
               id="maxTabs" 
@@ -856,20 +889,20 @@ const Options = () => {
               value={advancedSettings.maxTabs}
               onChange={(e) => handleAdvancedSettingChange('maxTabs', parseInt(e.target.value))}
             />
-            <small className="form-description" data-i18n="max_tabs_description">同时处理的最大标签页数量</small>
+            <small className="form-description" data-i18n="max_tabs_description">Maximum number of tabs to process</small>
           </div>
           <div className="form-group checkbox-group">
-            <label htmlFor="autoSave" data-i18n="auto_save">自动保存</label>
+            <label htmlFor="autoSave" data-i18n="auto_save">Auto save</label>
             <input 
               type="checkbox" 
               id="autoSave" 
               checked={advancedSettings.autoSave}
               onChange={(e) => handleAdvancedSettingChange('autoSave', e.target.checked)}
             />
-            <small className="form-description" data-i18n="auto_save_description">自动保存配置更改</small>
+            <small className="form-description" data-i18n="auto_save_description">Automatically save configuration changes</small>
           </div>
           <div className="form-group">
-            <label htmlFor="cacheTimeout" data-i18n="cache_timeout">缓存超时时间（分钟）</label>
+            <label htmlFor="cacheTimeout" data-i18n="cache_timeout">Cache timeout (minutes)</label>
             <input 
               type="number" 
               id="cacheTimeout" 
@@ -878,12 +911,12 @@ const Options = () => {
               value={advancedSettings.cacheTimeout}
               onChange={(e) => handleAdvancedSettingChange('cacheTimeout', parseInt(e.target.value))}
             />
-            <small className="form-description" data-i18n="cache_timeout_description">模型列表缓存的有效时间</small>
+            <small className="form-description" data-i18n="cache_timeout_description">Validity period for model list cache</small>
           </div>
         </div>
         <div className="form-actions">
-          <button onClick={clearCache} className="btn btn-secondary" data-i18n="clear_cache">清除缓存</button>
-          <button onClick={resetSettings} className="btn btn-secondary" data-i18n="reset_settings">重置设置</button>
+          <button onClick={clearCache} className="btn btn-secondary" data-i18n="clear_cache">Clear cache</button>
+          <button onClick={resetSettings} className="btn btn-secondary" data-i18n="reset_settings">Reset settings</button>
         </div>
       </div>
     </div>
@@ -892,18 +925,18 @@ const Options = () => {
   const renderAboutPage = () => (
     <div className="content-page active" id="page-about">
       <div className="page-header">
-        <h3 data-i18n="nav_about">关于 AI Tabs</h3>
-        <p data-i18n="about_description">扩展信息和帮助文档</p>
+        <h3 data-i18n="nav_about">About AI Tabs</h3>
+        <p data-i18n="about_description">Extension info and docs</p>
       </div>
       <div className="settings-section">
         <div className="about-content">
           <div className="about-item">
-            <h4 data-i18n="version">版本</h4>
+            <h4 data-i18n="version">Version</h4>
             <p>v1.0.0</p>
           </div>
           <div className="about-item">
-            <h4 data-i18n="description">描述</h4>
-            <p data-i18n="app_description">智能AI标签页管理扩展，支持多种AI服务供应商</p>
+            <h4 data-i18n="description">Description</h4>
+            <p data-i18n="app_description">Intelligent AI tab manager with multi-provider support</p>
           </div>
           <div className="about-item">
             <h4>GitHub</h4>
@@ -932,12 +965,12 @@ const Options = () => {
   const renderProvidersList = () => {
     // Get all custom providers (those starting with 'custom-')
     const customProviderKeys = Object.keys(providers).filter(key => key.startsWith('custom-'));
-    // Get all built-in providers from PROVIDER_CONFIG
-    const builtInProviderKeys = Object.keys(PROVIDER_CONFIG).filter(key => key !== 'custom');
+    // Get all built-in providers from PROVIDERS
+    const builtInProviderKeys = Object.keys(PROVIDERS).filter(key => key !== 'custom');
 
     const renderProviderItem = (providerKey: string, isCustom: boolean) => {
       const config = providers[providerKey];
-      const baseConfig = PROVIDER_CONFIG[providerKey];
+      const baseConfig = getProvider(providerKey);
       
       // Determine if configured
       const isConfigured = config && config.configured === true;
@@ -962,13 +995,13 @@ const Options = () => {
             <div className="provider-type" data-i18n={isCustom ? 'type_custom' : 'type_builtin'}>
               {typeof (window as any).getMessage === 'function'
                 ? (window as any).getMessage(isCustom ? 'type_custom' : 'type_builtin')
-                : (isCustom ? '自定义' : '内置')}
+                : (isCustom ? 'Custom' : 'Built-in')}
             </div>
             <div className="provider-details">
               <div className="provider-url-info">
-                <span className="provider-base-url">基础URL: {providerBaseURL}</span>
+                <span className="provider-base-url">Base URL: {providerBaseURL}</span>
                 {isCustom && (
-                  <span className="provider-endpoint">端点: {providerEndpoint}</span>
+                  <span className="provider-endpoint">Endpoint: {providerEndpoint}</span>
                 )}
               </div>
               <span className={`status-badge ${isConfigured ? 'configured' : 'not-configured'}`}>
@@ -976,7 +1009,7 @@ const Options = () => {
                   ? (isConfigured 
                     ? (window as any).getMessage('status_configured') 
                     : (window as any).getMessage('status_not_configured'))
-                  : (isConfigured ? '已配置' : '未配置')}
+                  : (isConfigured ? 'Configured' : 'Not Configured')}
               </span>
             </div>
           </div>
@@ -995,13 +1028,13 @@ const Options = () => {
                     setFormState(config || {});
                     setShowProviderForm(true);
                   }}
-                  title="编辑供应商"
+                  title="Edit provider"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
-                  <span>编辑</span>
+                  <span>Edit</span>
                 </button>
                 <button 
                   type="button" 
@@ -1009,17 +1042,17 @@ const Options = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (confirm(`确定要删除自定义供应商 "${providerName}" 吗？`)) {
+                    if (confirm(`Delete custom provider "${providerName}"?`)) {
                       console.log('Deleting custom provider:', providerKey);
                       deleteCustomProvider(providerKey);
                     }
                   }}
-                  title="删除供应商"
+                  title="Delete provider"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"></path>
                   </svg>
-                  <span>删除</span>
+                  <span>Delete</span>
                 </button>
               </>
             ) : (
@@ -1031,7 +1064,7 @@ const Options = () => {
                   e.stopPropagation();
                   openConfigProviderModal(providerKey);
                 }}
-                title="配置供应商"
+                title="Configure provider"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 20h9"></path>
@@ -1040,7 +1073,7 @@ const Options = () => {
                 <span data-i18n="configure_provider">
                   {typeof (window as any).getMessage === 'function'
                     ? (window as any).getMessage('configure_provider')
-                    : '配置'}
+                    : 'Configure'}
                 </span>
               </button>
             )}
@@ -1059,7 +1092,7 @@ const Options = () => {
             <h4 data-i18n="custom_providers">
               {typeof (window as any).getMessage === 'function'
                 ? (window as any).getMessage('custom_providers')
-                : '自定义供应商'}
+                : 'Custom providers'}
             </h4>
             {customProviderItems}
           </div>
@@ -1068,20 +1101,20 @@ const Options = () => {
           <h4 data-i18n="builtin_providers">
             {typeof (window as any).getMessage === 'function'
               ? (window as any).getMessage('builtin_providers')
-              : '内置供应商'}
+              : 'Built-in providers'}
           </h4>
           {builtInProviderItems}
         </div>
         {customProviderItems.length === 0 && builtInProviderItems.length === 0 && (
-          <div className="providers-empty">
+            <div className="providers-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"></circle>
               <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
               <line x1="9" y1="9" x2="9.01" y2="9"></line>
               <line x1="15" y1="9" x2="15.01" y2="9"></line>
             </svg>
-            <div data-i18n="no_configured_providers">暂无配置的供应商</div>
-            <div data-i18n="no_providers_message">请先添加自定义供应商或在"当前配置"中配置内置供应商</div>
+            <div data-i18n="no_configured_providers">No configured providers</div>
+            <div data-i18n="no_providers_message">Add a custom provider or configure a built-in provider</div>
           </div>
         )}
       </div>
@@ -1089,7 +1122,7 @@ const Options = () => {
   };
 
   const handleCustomProviderChange = (field: string, value: string) => {
-    setFormState((prev: any) => ({ ...prev, [field]: value }));
+    setFormState((prev: FormState) => ({ ...prev, [field]: value }));
   };
 
   const saveCustomProvider = async () => {
@@ -1138,7 +1171,7 @@ const Options = () => {
 
   const deleteCustomProvider = (providerKey: string) => {
     const providerName = providers[providerKey]?.name || getProviderDisplayName(providerKey);
-    if (confirm(`确定要删除自定义供应商 "${providerName}" 吗？`)) {
+    if (confirm(`Delete custom provider "${providerName}"?`)) {
       const newProviders = { ...providers };
       delete newProviders[providerKey];
       setProviders(newProviders);
@@ -1149,7 +1182,7 @@ const Options = () => {
 
   // Modal related functions
   const handleModalFormChange = (field: string, value: string) => {
-    setModalForm((prev: any) => ({ ...prev, [field]: value }));
+    setModalForm((prev: ModalForm) => ({ ...prev, [field]: value }));
   };
 
   const openAddProviderModal = () => {
@@ -1168,14 +1201,17 @@ const Options = () => {
     const config = providers[providerKey] || {};
     const decryptedConfig = { ...config };
     
-    // Decrypt API key if needed
+    // Decrypt API key if needed using secureStorage
     if (config.apiKey && typeof config.apiKey === 'string') {
       try {
-        if (config.apiKey.length > 20 && !config.apiKey.includes(' ')) {
-          decryptedConfig.apiKey = atob(config.apiKey);
+        const ss = (window as any).secureStorage;
+        if (ss && ss.encryption && typeof ss.encryption.decrypt === 'function') {
+          decryptedConfig.apiKey = ss.encryption.decrypt(config.apiKey);
+        } else {
+          decryptedConfig.apiKey = '';
         }
       } catch (e) {
-        // If decryption fails, use as-is
+        decryptedConfig.apiKey = '';
       }
     }
     
@@ -1272,6 +1308,13 @@ const Options = () => {
       }
 
       try {
+        // Request permissions for custom provider
+        const granted = await requestProviderPermissions('custom', modalForm.baseURL);
+        if (!granted) {
+          showStatusMessage('Network permissions required for this provider', 'error');
+          return;
+        }
+
         const providerKey = `custom-${Date.now()}`;
         const newProviderConfig = {
           name: modalForm.name,
@@ -1300,11 +1343,26 @@ const Options = () => {
     } else {
       // Config existing provider
       try {
+        // Check and request permissions before saving
+        const customBaseURL = modalProviderKey === 'custom' || modalProviderKey.startsWith('custom-') ? modalForm.baseURL : undefined;
+        const hasPermissions = await hasProviderPermissions(modalProviderKey, customBaseURL);
+        
+        if (!hasPermissions) {
+          const granted = await requestProviderPermissions(modalProviderKey, customBaseURL);
+          if (!granted) {
+            showStatusMessage('Network permissions required for this provider', 'error');
+            return;
+          }
+        }
+
         const configToSave = { ...modalForm };
         
         // Encrypt API key if provided
         if (configToSave.apiKey && configToSave.apiKey.trim()) {
-          configToSave.apiKey = btoa(configToSave.apiKey.trim());
+          const ss = (window as any).secureStorage;
+          if (ss && ss.encryption && typeof ss.encryption.encrypt === 'function') {
+            configToSave.apiKey = ss.encryption.encrypt(configToSave.apiKey.trim());
+          }
         }
         
         configToSave.configured = !!(modalForm.apiKey && modalForm.apiKey.trim() && modalForm.baseURL && modalForm.baseURL.trim());
@@ -1333,10 +1391,10 @@ const Options = () => {
       {/* Status message area */}
       <div id="status-message" className="status-message"></div>
       
-      {/* 左侧菜单栏 */}
+      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2 data-i18n="options_title">AI Tabs 设置</h2>
+          <h2 data-i18n="options_title">AI Tabs Settings</h2>
         </div>
         
         <nav className="sidebar-nav">
@@ -1351,7 +1409,7 @@ const Options = () => {
                   <circle cx="12" cy="12" r="3"></circle>
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
-                <span data-i18n="nav_general">常规设置</span>
+                <span data-i18n="nav_general">General</span>
               </button>
             </li>
             
@@ -1366,7 +1424,7 @@ const Options = () => {
                   <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path>
                   <path d="M12 1v6m0 6v6"></path>
                 </svg>
-                <span data-i18n="nav_providers">模型供应商</span>
+                <span data-i18n="nav_providers">Providers</span>
               </button>
             </li>
             
@@ -1379,7 +1437,7 @@ const Options = () => {
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="12 2 15.09 8.26 22 9 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9 8.91 8.26 12 2"></polygon>
                 </svg>
-                <span data-i18n="nav_advanced">高级设置</span>
+                <span data-i18n="nav_advanced">Advanced</span>
               </button>
             </li>
             
@@ -1394,32 +1452,32 @@ const Options = () => {
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span data-i18n="nav_about">关于</span>
+                <span data-i18n="nav_about">About</span>
               </button>
             </li>
           </ul>
         </nav>
       </aside>
 
-      {/* 右侧内容区域 */}
+      {/* Main content */}
       <main className="main-content">
         {renderPage()}
       </main>
 
-      {/* 统一的供应商modal */}
+      {/* Unified provider modal */}
       <FormModal
         show={showProviderModal}
         title={getModalTitle()}
         primaryButtonText={typeof (window as any).getMessage === 'function' 
-          ? (window as any).getMessage('save', '保存') 
-          : '保存'}
+          ? (window as any).getMessage('save', 'Save') 
+          : 'Save'}
         onSave={saveFromModal}
         onCancel={closeModal}
       >
         {modalMode === 'add' && (
           <FormField
             key={`modalProviderName-${refreshKey}`}
-            label="供应商名称"
+            label="Provider name"
             labelI18nKey="provider_name"
             htmlFor="modalProviderName"
             descriptionI18nKey="provider_name_description"
@@ -1449,7 +1507,7 @@ const Options = () => {
               id="modalApiKey"
               value={modalForm.apiKey || ''}
               onChange={(value) => handleModalFormChange('apiKey', value)}
-              placeholder="请输入您的API Key"
+              placeholder="Enter your API Key"
               required
             />
           </FormField>
@@ -1457,7 +1515,7 @@ const Options = () => {
         
         <FormField
           key={`modalBaseURL-${refreshKey}`}
-          label="API基础URL"
+            label="API Base URL"
           labelI18nKey="base_url"
           htmlFor="modalBaseURL"
           descriptionI18nKey="base_url_description"
@@ -1475,7 +1533,7 @@ const Options = () => {
         
         {modalMode === 'add' && (
           <FormField
-            label="聊天端点"
+            label="Chat endpoint"
             labelI18nKey="provider_endpoint"
             htmlFor="modalProviderEndpoint"
           >
@@ -1491,7 +1549,7 @@ const Options = () => {
         
         {modalMode === 'config' && (
           <FormField
-            label="选择模型"
+            label="Model"
             labelI18nKey="model_select"
             htmlFor="modalSelectedModel"
             descriptionI18nKey="model_select_description"
@@ -1510,7 +1568,7 @@ const Options = () => {
         
         {modalMode === 'add' && (
           <FormField
-            label="默认模型"
+            label="Default models"
             labelI18nKey="provider_default_models"
             htmlFor="modalProviderModels"
             descriptionI18nKey="provider_models_description"

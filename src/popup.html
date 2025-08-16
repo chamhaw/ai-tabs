@@ -6,7 +6,18 @@
     <title>AI Tab Manager</title>
     <link rel="stylesheet" type="text/css" href="styles/common.css">
     <link rel="stylesheet" type="text/css" href="styles/popup.css">
-    <script src="scripts/i18n.js"></script>
+    <script type="module">
+    import { initI18n, getMessage } from './modules/i18n.js';
+    
+    // Make available globally for compatibility
+    window.initI18n = initI18n;
+    window.getMessage = getMessage;
+    
+    // Initialize i18n on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initI18n();
+    });
+  </script>
 </head>
 <body>
     <div id="root"></div>

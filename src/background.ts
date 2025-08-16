@@ -1,38 +1,32 @@
-// Import security module and worker-compatible i18n
-importScripts('scripts/security.js');
-importScripts('scripts/i18n.js');
+// Import ES modules for security and i18n
+import { secureStorage } from './modules/security';
+import { customI18n } from './modules/i18n';
+import { createComponentLogger } from './utils/logger';
+import { createComponentErrorHandler } from './utils/errorHandler';
 
-// Define types for imported scripts
-declare const secureStorage: any;
+const log = createComponentLogger('Background');
+const errorHandler = createComponentErrorHandler('Background');
 
-async function getLocalizedMessage(key: string, substitutions?: any): Promise<string> {
+async function getLocalizedMessage(key: string, substitutions?: string | string[]): Promise<string> {
   try {
-    // Access global customI18n from imported script
-    const globalI18n = (globalThis as any).customI18n;
-    
-    if (!globalI18n) {
-      console.error('customI18n not available, falling back to key');
-      return key;
-    }
-    
     // Ensure i18n is initialized with correct language
-    if (!globalI18n.initialized) {
-      await globalI18n.init();
+    if (!customI18n.initialized) {
+      await customI18n.init();
     }
     
     // Check if we need to reinitialize with user's language preference
-    await ensureCorrectLanguage(globalI18n);
+    await ensureCorrectLanguage(customI18n);
     
-    const message = globalI18n.getMessage(key, substitutions);
+    const message = customI18n.getMessage(key, substitutions);
     
     return message || key;
   } catch (error) {
-    console.error('Failed to get i18n message:', error);
+    errorHandler.handle(error, 'getLocalizedMessage', { key });
     return key;
   }
 }
 
-async function ensureCorrectLanguage(i18nInstance: any): Promise<void> {
+async function ensureCorrectLanguage(i18nInstance: typeof customI18n): Promise<void> {
   try {
     // Get user's language preference from settings
     const result = await chrome.storage.local.get(['userLanguage', 'language']);
@@ -99,21 +93,7 @@ ${forbiddenRules}`;
 }
 
 
-// Service worker initialization and keep-alive
-
-
-// More robust keep-alive mechanism for Manifest V3
-const keepAlive = () => {
-  chrome.runtime.sendMessage({ type: 'KEEP_ALIVE' }).catch(() => {
-    // Ignore errors - this is normal when no listeners are available
-  });
-};
-
-// Keep service worker alive
-setInterval(keepAlive, 25000);
-
-// Also send initial keep-alive
-keepAlive();
+// Service worker initialization
 
 // Handle service worker lifecycle
 self.addEventListener('install', (event: any) => {
@@ -124,11 +104,64 @@ self.addEventListener('install', (event: any) => {
 self.addEventListener('activate', (event: any) => {
 
   event.waitUntil((self as any).clients.claim());
+  // Schedule periodic auto-group scan using alarms (event-driven, low overhead)
+  try {
+    chrome.alarms.clear('auto_group_scan');
+    // Run every 1 minute to catch cases without tab events
+    chrome.alarms.create('auto_group_scan', { periodInMinutes: 1 });
+  } catch (e) {
+    // Ignore if alarms are unavailable
+  }
 });
+
+// Periodic check via alarms to improve reliability without keep-alive
+try {
+  chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name !== 'auto_group_scan') return;
+    try {
+      const windows = await chrome.windows.getAll({ windowTypes: ['normal'] });
+      for (const w of windows) {
+        if (w.id != null) {
+          await checkAndTriggerAutoGroup(w.id);
+        }
+      }
+    } catch (err) {
+      // swallow to avoid noisy logs
+    }
+  });
+} catch (e) {
+  // alarms not available
+}
 
 // Track last auto-group time for rate limiting
 let lastAutoGroupTime = 0;
 const AUTO_GROUP_RATE_LIMIT = 3000; // 3 seconds between auto-groups
+
+// Strict LLM request throttling to prevent burst calls
+const LLM_REQUEST_COOLDOWN_MS = 10000; // 10s cooldown per window
+const groupingInProgressWindows = new Set<number>();
+const lastGroupingRequestTimeByWindow = new Map<number, number>();
+
+function isWithinLLMCooldown(windowId: number): boolean {
+  const last = lastGroupingRequestTimeByWindow.get(windowId) || 0;
+  return Date.now() - last < LLM_REQUEST_COOLDOWN_MS;
+}
+
+async function triggerGroupingWithRateLimit(tabsToGroup: chrome.tabs.Tab[] | null, windowId: number): Promise<void> {
+  if (groupingInProgressWindows.has(windowId)) {
+    return;
+  }
+  if (isWithinLLMCooldown(windowId)) {
+    return;
+  }
+  groupingInProgressWindows.add(windowId);
+  try {
+    await initiateAndGroupTabs(tabsToGroup, windowId);
+  } finally {
+    groupingInProgressWindows.delete(windowId);
+    lastGroupingRequestTimeByWindow.set(windowId, Date.now());
+  }
+}
 
 // Auto-group functionality: monitor tab count and trigger grouping
 async function checkAndTriggerAutoGroup(windowId: number) {
@@ -169,8 +202,8 @@ async function checkAndTriggerAutoGroup(windowId: number) {
         return;
       }
       
-      // Trigger auto-grouping
-      await initiateAndGroupTabs(null, windowId);
+      // Trigger auto-grouping with LLM request rate limiting
+      await triggerGroupingWithRateLimit(null, windowId);
     }
   } catch (error) {
     console.error('Auto-group check failed:', error);
@@ -224,7 +257,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
       }
       try {
-        await initiateAndGroupTabs(null, window.id as number);
+        await triggerGroupingWithRateLimit(null, window.id as number);
         sendResponse({ success: true, message: 'Grouping process completed' });
       } catch (e: any) {
         sendResponse({ success: false, error: e.message });
@@ -421,7 +454,10 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       tabsToGroup = tabsToGroup.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE);
       
       if (tabsToGroup.length === 0) {
-        chrome.runtime.sendMessage({ type: 'GROUPING_FINISHED', success: true, message: 'No ungrouped tabs to process' });
+        // Notify UI if available; ignore when no receiver exists
+        void chrome.runtime
+          .sendMessage({ type: 'GROUPING_FINISHED', success: true, message: 'No ungrouped tabs to process' })
+          .catch(() => {});
         return;
       }
     }
@@ -493,14 +529,20 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
 
     if (Array.isArray(groupResult) && groupResult.length > 0) {
       await groupTabs(groupResult, windowId, reuseExistingGroups);
-      chrome.runtime.sendMessage({ type: 'GROUPING_FINISHED', success: true });
+      // Notify UI if available; ignore when no receiver exists
+      void chrome.runtime
+        .sendMessage({ type: 'GROUPING_FINISHED', success: true })
+        .catch(() => {});
     } else {
       throw new Error('No valid groups found in AI response');
     }
   } catch (e: any) {
-    console.error('Error in initiateAndGroupTabs:', e);
-    chrome.runtime.sendMessage({ type: 'GROUPING_FINISHED', success: false, error: e.message });
-    throw e;
+    const appError = errorHandler.handle(e, 'initiateAndGroupTabs', { windowId });
+    // Notify UI if available; ignore when no receiver exists
+    void chrome.runtime
+      .sendMessage({ type: 'GROUPING_FINISHED', success: false, error: appError.userMessage })
+      .catch(() => {});
+    throw new Error(appError.userMessage);
   }
 }
 
@@ -536,11 +578,13 @@ async function getCurrentProviderConfig(): Promise<any> {
       
       const providerConfig = providers[selectedProvider];
       
-      // Decrypt API key if exists
+      // Decrypt API key if exists using ES module secureStorage
       if (providerConfig.apiKey) {
         try {
-          // Use the same decryption method as the new system
-          providerConfig.apiKey = atob(providerConfig.apiKey);
+          providerConfig.apiKey = secureStorage.encryption.decrypt(providerConfig.apiKey);
+          if (!providerConfig.apiKey) {
+            throw new Error('Decryption returned empty result');
+          }
         } catch (e) {
           console.error('Failed to decrypt API key:', e);
           resolve(null);

@@ -2,7 +2,8 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
+  devtool: 'cheap-module-source-map',
   entry: {
     popup: path.resolve(__dirname, 'src', 'index.tsx'),
     options: path.resolve(__dirname, 'src', 'options-index.tsx'),
@@ -24,9 +25,7 @@ module.exports = {
           loader: 'ts-loader', 
           options: { 
             configFile: 'tsconfig.json',
-            compilerOptions: {
-              removeComments: true, // Remove comments in production
-            }
+            transpileOnly: true // Faster development builds
           } 
         }],
         exclude: /node_modules/,
@@ -38,19 +37,13 @@ module.exports = {
             loader: 'style-loader',
             options: {
               insert: function(element) {
-                // CSP-compatible insertion
+                // Custom insertion for CSP compatibility
                 var parent = document.head || document.getElementsByTagName('head')[0];
-                element.setAttribute('nonce', 'extension-styles');
                 parent.appendChild(element);
               },
             },
           },
-          {
-            loader: 'css-loader',
-            options: {
-              sourceMap: false, // Disable source maps in production
-            },
-          }
+          'css-loader'
         ],
       },
     ],
@@ -87,7 +80,7 @@ module.exports = {
           from: path.resolve(__dirname, 'src', 'modules'),
           to: path.resolve(__dirname, 'dist', 'modules'),
         },
-        // Copy styles
+        // Copy styles (for direct linking, CSP-safe)
         {
           from: path.resolve(__dirname, 'src', 'styles'),
           to: path.resolve(__dirname, 'dist', 'styles'),
@@ -95,4 +88,13 @@ module.exports = {
       ],
     }),
   ],
+  optimization: {
+    minimize: false, // No minification in dev mode
+  },
+  stats: {
+    errorDetails: true,
+    warnings: true,
+  },
 };
+
+

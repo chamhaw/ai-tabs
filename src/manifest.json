@@ -6,10 +6,27 @@
   "default_locale": "zh_CN",
   "author": "AI Tabs Developer",
   "homepage_url": "https://github.com/chamhaw/ai-tabs",
-  "permissions": ["tabs", "storage", "tabGroups"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["tabs", "storage", "tabGroups", "alarms"],
+  "optional_host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.deepseek.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://dashscope.aliyuncs.com/*",
+    "https://aip.baidubce.com/*",
+    "https://open.bigmodel.cn/*",
+    "https://api.moonshot.cn/*",
+    "https://api.lingyiwanwu.com/*",
+    "https://api.minimax.chat/*",
+    "https://ark.cn-beijing.volces.com/*",
+    "https://spark-api-open.xf-yun.com/*",
+    "https://api.sensenova.cn/*",
+    "https://api.stepfun.com/*",
+    "https://hunyuan.tencentcloudapi.com/*"
+  ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html",
@@ -29,11 +46,11 @@
     "128": "icons/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'self'"
   },
   "web_accessible_resources": [
     {
-      "resources": ["_locales/*/messages.json", "scripts/security.js"],
+      "resources": ["_locales/*/messages.json"],
       "matches": ["<all_urls>"]
     }
   ]
