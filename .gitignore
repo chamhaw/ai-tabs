@@ -30,6 +30,7 @@ logs/
 
 # 构建输出
 dist/
+dist.*
 build/
 
 # 环境配置
