@@ -1,6 +1,6 @@
 {
   "name": "ai-tabs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "智能AI标签页管理扩展，支持多种AI服务供应商",
   "scripts": {
     "build": "webpack --config webpack.config.js",
