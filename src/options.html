@@ -3,10 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="options_title">AI Tabs 设置</title>
+  <title data-i18n="options_title">AI Tabs Settings</title>
   <link rel="stylesheet" href="styles/common.css">
   <link rel="stylesheet" href="styles/options.css">
-  <script src="scripts/i18n.js"></script>
+  <script type="module">
+    import { initI18n, getMessage } from './modules/i18n.js';
+    import { secureStorage } from './modules/security.js';
+    
+    // Make available globally for compatibility
+    window.initI18n = initI18n;
+    window.getMessage = getMessage;
+    window.secureStorage = secureStorage;
+    
+    // Initialize i18n on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initI18n();
+    });
+  </script>
 </head>
 <body class="options-page-body">
   <div id="root"></div>

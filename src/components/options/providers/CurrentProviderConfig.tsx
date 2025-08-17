@@ -18,16 +18,18 @@ const CurrentProviderConfig = () => {
         if (providers && providers[selectedProvider]) {
           const providerConfig = providers[selectedProvider];
           
-          // Decrypt API key if needed (handle encrypted data)
+          // Decrypt API key with unified secureStorage
           let decryptedConfig = { ...providerConfig };
           if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
             try {
-              // Try to decrypt if it looks like base64 encoded
-              if (providerConfig.apiKey.length > 20 && !providerConfig.apiKey.includes(' ')) {
-                decryptedConfig.apiKey = atob(providerConfig.apiKey);
+              const ss = (window as any).secureStorage;
+              if (ss && ss.encryption && typeof ss.encryption.decrypt === 'function') {
+                decryptedConfig.apiKey = ss.encryption.decrypt(providerConfig.apiKey);
+              } else {
+                decryptedConfig.apiKey = '';
               }
             } catch (e) {
-              // If decryption fails, use as-is
+              decryptedConfig.apiKey = '';
             }
           }
           
@@ -52,16 +54,18 @@ const CurrentProviderConfig = () => {
       if (result.providers && result.providers[provider]) {
         const providerConfig = result.providers[provider];
         
-        // Decrypt API key if needed (handle encrypted data)
+        // Decrypt API key with unified secureStorage
         let decryptedConfig = { ...providerConfig };
         if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
           try {
-            // Try to decrypt if it looks like base64 encoded
-            if (providerConfig.apiKey.length > 20 && !providerConfig.apiKey.includes(' ')) {
-              decryptedConfig.apiKey = atob(providerConfig.apiKey);
+            const ss = (window as any).secureStorage;
+            if (ss && ss.encryption && typeof ss.encryption.decrypt === 'function') {
+              decryptedConfig.apiKey = ss.encryption.decrypt(providerConfig.apiKey);
+            } else {
+              decryptedConfig.apiKey = '';
             }
           } catch (e) {
-            // If decryption fails, use as-is
+            decryptedConfig.apiKey = '';
           }
         }
         
@@ -94,11 +98,15 @@ const CurrentProviderConfig = () => {
       // Prepare config to save
       const configToSave = { ...formState };
       
-      // Encrypt API key if provided
+      // Encrypt API key if provided using unified secureStorage
       if (configToSave.apiKey && configToSave.apiKey.trim()) {
         try {
-          // Simple base64 encoding for now (matches original implementation)
-          configToSave.apiKey = btoa(configToSave.apiKey.trim());
+          const ss = (window as any).secureStorage;
+          if (ss && ss.encryption && typeof ss.encryption.encrypt === 'function') {
+            configToSave.apiKey = ss.encryption.encrypt(configToSave.apiKey.trim());
+          } else {
+            throw new Error('secureStorage not available');
+          }
         } catch (e) {
           console.error('API key encryption failed:', e);
           return;
@@ -142,7 +150,7 @@ const CurrentProviderConfig = () => {
     <div className="tab-content active" id="tab-current">
       <div className="settings-section">
         <div className="form-group">
-          <label htmlFor="providerSelect" data-i18n="provider_select">选择供应商</label>
+          <label htmlFor="providerSelect" data-i18n="provider_select">Provider</label>
           <select id="providerSelect" value={selectedProvider} onChange={handleProviderChange}>
             <option value="openai" data-i18n="provider_openai"></option>
             <option value="deepseek" data-i18n="provider_deepseek"></option>
@@ -161,40 +169,40 @@ const CurrentProviderConfig = () => {
             <option value="tencent" data-i18n="provider_tencent"></option>
             <option value="custom" data-i18n="provider_custom"></option>
           </select>
-          <small className="form-description" data-i18n="provider_select_description">选择您要使用的AI服务供应商</small>
+          <small className="form-description" data-i18n="provider_select_description">Choose AI provider</small>
         </div>
 
         <div id="providerConfigStatus" className="provider-config-status">
           <div className="config-status-item">
-            <span className="config-label" data-i18n="api_key_status">API密钥状态</span>
-            <span id="apiKeyStatus" className="config-value">{providerConfig.apiKey ? '已配置' : '未配置'}</span>
+            <span className="config-label" data-i18n="api_key_status">API Key Status</span>
+            <span id="apiKeyStatus" className="config-value">{providerConfig.apiKey ? 'Configured' : 'Not Configured'}</span>
           </div>
           <div className="config-status-item">
-            <span className="config-label" data-i18n="base_url_status">基础URL</span>
+            <span className="config-label" data-i18n="base_url_status">Base URL</span>
             <span id="baseURLStatus" className="config-value">{providerConfig.baseURL || '--'}</span>
           </div>
           <div className="config-status-item">
-            <span className="config-label" data-i18n="selected_model_status">选择的模型</span>
-            <span id="selectedModelStatus" className="config-value">{providerConfig.selectedModel || '未选择'}</span>
+            <span className="config-label" data-i18n="selected_model_status">Selected Model</span>
+            <span id="selectedModelStatus" className="config-value">{providerConfig.selectedModel || 'Not Selected'}</span>
           </div>
           <button type="button" id="configureProviderBtn" className="btn btn-primary btn-small" onClick={() => setShowConfigForm(true)}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            <span>配置此供应商</span>
+            <span>Configure</span>
           </button>
         </div>
 
         {showConfigForm && (
           <div id="providerConfigForm" className="provider-config-form">
             <div className="form-group">
-              <label htmlFor="baseURL">API基础URL</label>
+              <label htmlFor="baseURL">API Base URL</label>
               <input type="text" id="baseURL" name="baseURL" value={formState.baseURL || ''} onChange={handleFormChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="apiKey">API密钥</label>
+              <label htmlFor="apiKey">API Key</label>
               <input type="password" id="apiKey" name="apiKey" value={formState.apiKey || ''} onChange={handleFormChange} />
             </div>
             <div className="form-group">
-              <label htmlFor="selectedModel">选择模型</label>
+              <label htmlFor="selectedModel">Model</label>
               <div className="model-select-container">
                 <select id="selectedModel" name="selectedModel" value={formState.selectedModel || ''} onChange={handleFormChange}>
                   {models.map((model) => (
@@ -202,25 +210,25 @@ const CurrentProviderConfig = () => {
                   ))}
                 </select>
                 <button type="button" className="refresh-btn" onClick={handleRefreshModels} disabled={loadingModels}>
-                  {loadingModels ? '加载中...' : '刷新'}
+                  {loadingModels ? 'Loading...' : 'Refresh'}
                 </button>
               </div>
             </div>
             <div className="form-actions">
-              <button type="button" className="btn btn-primary" onClick={handleSaveConfig}>保存</button>
-              <button type="button" className="btn btn-secondary" onClick={() => setShowConfigForm(false)}>取消</button>
+              <button type="button" className="btn btn-primary" onClick={handleSaveConfig}>Save</button>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowConfigForm(false)}>Cancel</button>
             </div>
           </div>
         )}
 
         <div className="settings-section">
-          <h4 data-i18n="global_settings">全局设置</h4>
+          <h4 data-i18n="global_settings">Global Settings</h4>
           <div className="form-group">
-            <label htmlFor="groupingStrategy">分组策略</label>
+            <label htmlFor="groupingStrategy">Grouping Strategy</label>
             <input type="text" id="groupingStrategy" name="groupingStrategy" value={globalSettings.groupingStrategy || ''} onChange={handleGlobalSettingsChange} />
           </div>
           <div className="form-actions">
-            <button type="button" className="btn btn-primary" onClick={handleSaveGlobalSettings}>保存</button>
+            <button type="button" className="btn btn-primary" onClick={handleSaveGlobalSettings}>Save</button>
           </div>
         </div>
       </div>
