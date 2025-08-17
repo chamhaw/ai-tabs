@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ManifestVersionSyncPlugin = require('./scripts/manifest-transform');
 
 module.exports = {
   mode: 'production',
@@ -56,6 +57,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new ManifestVersionSyncPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         // Copy manifest.json
