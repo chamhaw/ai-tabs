@@ -4,7 +4,7 @@
  * Works in both Service Worker and DOM contexts
  */
 
-import { createComponentLogger } from '../utils/logger';
+// Simple logging utilities
 
 interface I18nMessages {
   [key: string]: {
@@ -26,7 +26,7 @@ interface CustomI18n {
   getMessage(key: string, substitutions?: string | string[]): string;
 }
 
-const log = createComponentLogger('I18n');
+
 
 class I18nImplementation implements CustomI18n {
   currentLanguage: string = 'en';
@@ -116,13 +116,13 @@ class I18nImplementation implements CustomI18n {
 
   getMessage(key: string, substitutions?: string | string[]): string {
     if (!this.initialized) {
-      log.warn('I18n not initialized, returning key', { key });
+      console.warn(`[I18n] Not initialized, returning key: ${key}`);
       return key;
     }
 
     const messageObj = this.messages[key];
     if (!messageObj) {
-      log.warn('Missing i18n key', { key });
+      console.warn(`[I18n] Missing i18n key: ${key}`);
       return key;
     }
 

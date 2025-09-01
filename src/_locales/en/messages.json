@@ -168,6 +168,10 @@
   "default_grouping_strategy": {
     "message": "Intelligently group tabs based on their content and purpose, such as grouping tabs from the same website, related topics, or workflows together. Prioritize user browsing patterns and associations between tabs."
   },
+  "save": {
+    "message": "Save",
+    "description": "Save button"
+  },
   "save_settings": {
     "message": "Save",
     "description": "Save button text"
