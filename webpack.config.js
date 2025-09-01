@@ -1,5 +1,53 @@
 const path = require('path');
+const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+// Inline Manifest Version Sync Plugin
+class ManifestVersionSyncPlugin {
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('ManifestVersionSyncPlugin', (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'ManifestVersionSyncPlugin',
+          stage: compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        (assets) => {
+          const manifestAsset = assets['manifest.json'];
+          if (!manifestAsset) {
+            console.log('📦 Manifest file not found, skipping version sync');
+            return;
+          }
+
+          try {
+            // Read package.json
+            const packageJsonPath = path.resolve(compiler.context, 'package.json');
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            
+            // Parse current manifest
+            const manifestJson = JSON.parse(manifestAsset.source());
+            
+            // Update version
+            const oldVersion = manifestJson.version;
+            manifestJson.version = packageJson.version;
+            
+            // Create new content
+            const newContent = JSON.stringify(manifestJson, null, 2);
+            
+            // Update the asset
+            compilation.updateAsset('manifest.json', {
+              source: () => newContent,
+              size: () => newContent.length
+            });
+            
+            console.log(`📦 Manifest version synced: ${oldVersion} → ${packageJson.version}`);
+          } catch (error) {
+            console.error('❌ Failed to sync manifest version:', error.message);
+          }
+        }
+      );
+    });
+  }
+}
 
 module.exports = {
   mode: 'production',
@@ -56,6 +104,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new ManifestVersionSyncPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         // Copy manifest.json
@@ -72,6 +121,8 @@ module.exports = {
           from: path.resolve(__dirname, 'src', 'options.html'),
           to: path.resolve(__dirname, 'dist'),
         },
+
+
         // Copy icons
         {
           from: path.resolve(__dirname, 'src', 'icons'),
@@ -82,11 +133,7 @@ module.exports = {
           from: path.resolve(__dirname, 'src', '_locales'),
           to: path.resolve(__dirname, 'dist', '_locales'),
         },
-        // Copy module scripts (ES modules for security and i18n)
-        {
-          from: path.resolve(__dirname, 'src', 'modules'),
-          to: path.resolve(__dirname, 'dist', 'modules'),
-        },
+
         // Copy styles
         {
           from: path.resolve(__dirname, 'src', 'styles'),

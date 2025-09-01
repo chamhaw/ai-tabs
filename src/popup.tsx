@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { initI18n } from './modules/i18n';
 
 const Popup = () => {
   const [minTabsInGroup, setMinTabsInGroup] = useState(2);
@@ -27,11 +28,39 @@ const Popup = () => {
     }
   };
 
+  const updateUITranslations = () => {
+    // Update all elements with data-i18n attributes
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const messageKey = element.getAttribute('data-i18n');
+      if (typeof (window as any).getMessage === 'function') {
+        const message = (window as any).getMessage(messageKey);
+        if (message && message !== messageKey) {
+          (element as HTMLElement).textContent = message;
+        }
+      }
+    });
+    
+    // Update all elements with data-i18n-placeholder attributes
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+      const messageKey = element.getAttribute('data-i18n-placeholder');
+      if (typeof (window as any).getMessage === 'function') {
+        const message = (window as any).getMessage(messageKey);
+        if (message && message !== messageKey && element instanceof HTMLInputElement) {
+          element.placeholder = message;
+        }
+      }
+    });
+  };
+
   useEffect(() => {
     // Initialize i18n
-    if (typeof window !== 'undefined' && (window as any).initI18n) {
-      (window as any).initI18n();
-    }
+    const initializeI18n = async () => {
+      await initI18n();
+      // Update UI translations after i18n is initialized
+      setTimeout(updateUITranslations, 100);
+    };
+    
+    initializeI18n();
 
     // Load settings from chrome.storage.local
     chrome.storage.local.get([
@@ -63,7 +92,24 @@ const Popup = () => {
     };
 
     chrome.runtime.onMessage.addListener(messageListener);
-    return () => chrome.runtime.onMessage.removeListener(messageListener);
+    
+    // Listen for storage changes (language changes)
+    const handleStorageChange = (changes: any) => {
+      if (changes.userLanguage || changes.language) {
+        // Re-initialize i18n and update UI
+        initI18n().then(() => {
+          // Update UI translations after i18n is re-initialized
+          setTimeout(updateUITranslations, 100);
+        });
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener);
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
   }, []);
 
   const saveSettings = async () => {

@@ -4,6 +4,8 @@ import PasswordInput from './components/PasswordInput';
 import ModelSelect from './components/ModelSelect';
 import FormModal from './components/FormModal';
 import { requestProviderPermissions, hasProviderPermissions } from './utils/permissions';
+import { initI18n, getMessage } from './modules/i18n';
+import { extensionStorage } from './modules/security';
 
 import { PROVIDERS, getProvider, createProviderConfig } from './config/providers';
 
@@ -93,9 +95,7 @@ const Options = () => {
 
   const initializeOptions = async () => {
     // Initialize i18n
-    if (typeof window !== 'undefined' && (window as any).initI18n) {
-      await (window as any).initI18n();
-    }
+    await initI18n();
 
     // Load all settings
     await loadAllSettings();
@@ -137,16 +137,13 @@ const Options = () => {
           // Decrypt API key if needed (handle encrypted data)
           let decryptedConfig = { ...providerConfig };
           if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
+            // Try to get API key from secure storage
             try {
-              if (typeof (window as any).secureStorage !== 'undefined' && (window as any).secureStorage.encryption && typeof (window as any).secureStorage.encryption.decrypt === 'function') {
-                decryptedConfig.apiKey = (window as any).secureStorage.encryption.decrypt(providerConfig.apiKey);
-              } else {
-                console.error('secureStorage not available in options page');
-                decryptedConfig.apiKey = '';
-              }
+              const secureKey = await extensionStorage.getApiKey(basicResult.selectedProvider);
+              decryptedConfig.apiKey = secureKey || providerConfig.apiKey || '';
             } catch (e) {
-              console.error('API key decryption failed');
-              decryptedConfig.apiKey = '';
+              // Fallback to stored value (migration)
+              decryptedConfig.apiKey = providerConfig.apiKey || '';
             }
           }
           
@@ -209,11 +206,9 @@ const Options = () => {
         userLanguage: newLanguage 
       });
       
-      // Re-initialize i18n if available
-      if (typeof (window as any).initI18n === 'function') {
-        await (window as any).initI18n();
-        updateUITranslations();
-      }
+      // Re-initialize i18n
+      await initI18n();
+      updateUITranslations();
       
       // Force re-render to update all dynamic content
       setRefreshKey(prev => prev + 1);
@@ -307,7 +302,7 @@ const Options = () => {
         modelsUrl = `${baseURL}/models`;
       }
       
-      console.log('Fetching models from:', modelsUrl); // Debug log
+      
       
       const response = await fetch(modelsUrl, {
         method: 'GET',
@@ -325,7 +320,7 @@ const Options = () => {
       }
 
       const data = await response.json();
-      console.log('API response:', data); // Debug log
+      
       
       let models: string[] = [];
       
@@ -356,7 +351,7 @@ const Options = () => {
         return;
       }
       
-      console.log('Parsed models:', models); // Debug log
+
       setAvailableModels(models);
       
       // Update formState with models and save to storage
@@ -417,17 +412,18 @@ const Options = () => {
       // Prepare config to save
       const configToSave = { ...formState };
       
-      // Encrypt API key if provided
+      // Store API key securely
       if (configToSave.apiKey && configToSave.apiKey.trim()) {
+        const apiKey = configToSave.apiKey.trim();
+        
+        // Store in secure storage
         try {
-          if (typeof (window as any).secureStorage !== 'undefined' && (window as any).secureStorage.encryption && typeof (window as any).secureStorage.encryption.encrypt === 'function') {
-            configToSave.apiKey = (window as any).secureStorage.encryption.encrypt(configToSave.apiKey.trim());
-          } else {
-            throw new Error('secureStorage not available');
-          }
+          await extensionStorage.storeApiKey(selectedProvider, apiKey);
+          // Mark that we have an API key but don't store the actual key in providers
+          configToSave.apiKey = 'STORED_SECURELY';
         } catch (e) {
-          console.error('API key encryption failed:', e);
-          showStatusMessage('API key encryption failed', 'error');
+          console.error('Failed to store API key securely:', e);
+          showStatusMessage('Failed to store API key securely', 'error');
           return;
         }
       }
@@ -459,7 +455,7 @@ const Options = () => {
       
       showStatusMessage('Provider configuration saved successfully', 'success');
       
-      console.log('Saved provider config:', selectedProvider, configToSave); // Debug log
+
     } catch (error) {
       console.error('Failed to save provider config:', error);
       showStatusMessage('Failed to save provider configuration', 'error');
@@ -538,6 +534,17 @@ const Options = () => {
         const message = (window as any).getMessage(messageKey);
         if (message && message !== messageKey) {
           (element as HTMLElement).textContent = message;
+        }
+      }
+    });
+    
+    // Update all elements with data-i18n-placeholder attributes
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+      const messageKey = element.getAttribute('data-i18n-placeholder');
+      if (typeof (window as any).getMessage === 'function') {
+        const message = (window as any).getMessage(messageKey);
+        if (message && message !== messageKey && element instanceof HTMLInputElement) {
+          element.placeholder = message;
         }
       }
     });
@@ -1059,10 +1066,10 @@ const Options = () => {
               <button 
                 type="button" 
                 className="btn btn-primary btn-small" 
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  openConfigProviderModal(providerKey);
+                  await openConfigProviderModal(providerKey);
                 }}
                 title="Configure provider"
               >
@@ -1193,7 +1200,7 @@ const Options = () => {
     setShowProviderModal(true);
   };
 
-  const openConfigProviderModal = (providerKey: string) => {
+  const openConfigProviderModal = async (providerKey: string) => {
     setModalMode('config');
     setModalProviderKey(providerKey);
     
@@ -1201,18 +1208,13 @@ const Options = () => {
     const config = providers[providerKey] || {};
     const decryptedConfig = { ...config };
     
-    // Decrypt API key if needed using secureStorage
-    if (config.apiKey && typeof config.apiKey === 'string') {
-      try {
-        const ss = (window as any).secureStorage;
-        if (ss && ss.encryption && typeof ss.encryption.decrypt === 'function') {
-          decryptedConfig.apiKey = ss.encryption.decrypt(config.apiKey);
-        } else {
-          decryptedConfig.apiKey = '';
-        }
-      } catch (e) {
-        decryptedConfig.apiKey = '';
-      }
+    // Try to get API key from secure storage
+    try {
+      const secureKey = await extensionStorage.getApiKey(providerKey);
+      decryptedConfig.apiKey = secureKey || config.apiKey || '';
+    } catch (e) {
+      // Fallback to stored value (migration)
+      decryptedConfig.apiKey = config.apiKey || '';
     }
     
     setModalForm(decryptedConfig);
@@ -1357,11 +1359,19 @@ const Options = () => {
 
         const configToSave = { ...modalForm };
         
-        // Encrypt API key if provided
+        // Store API key securely
         if (configToSave.apiKey && configToSave.apiKey.trim()) {
-          const ss = (window as any).secureStorage;
-          if (ss && ss.encryption && typeof ss.encryption.encrypt === 'function') {
-            configToSave.apiKey = ss.encryption.encrypt(configToSave.apiKey.trim());
+          const apiKey = configToSave.apiKey.trim();
+          
+          // Store in secure storage
+          try {
+            await extensionStorage.storeApiKey(modalProviderKey, apiKey);
+            // Mark that we have an API key but don't store the actual key in providers
+            configToSave.apiKey = 'STORED_SECURELY';
+          } catch (e) {
+            console.error('Failed to store API key securely:', e);
+            showStatusMessage('Failed to store API key securely', 'error');
+            return;
           }
         }
         

@@ -1,11 +1,7 @@
 // Import ES modules for security and i18n
-import { secureStorage } from './modules/security';
+import { secureStorage, extensionStorage } from './modules/security';
 import { customI18n } from './modules/i18n';
-import { createComponentLogger } from './utils/logger';
-import { createComponentErrorHandler } from './utils/errorHandler';
-
-const log = createComponentLogger('Background');
-const errorHandler = createComponentErrorHandler('Background');
+// Simple error handling without complex logger infrastructure
 
 async function getLocalizedMessage(key: string, substitutions?: string | string[]): Promise<string> {
   try {
@@ -21,7 +17,7 @@ async function getLocalizedMessage(key: string, substitutions?: string | string[
     
     return message || key;
   } catch (error) {
-    errorHandler.handle(error, 'getLocalizedMessage', { key });
+    console.error('Failed to get localized message:', error);
     return key;
   }
 }
@@ -433,6 +429,16 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     if (!settings || !settings.apiKey || !settings.baseURL || !settings.selectedModel) {
       throw new Error('AI settings not configured');
     }
+    
+    // Validate settings types
+    if (typeof settings.baseURL !== 'string') {
+      console.error('Invalid settings.baseURL:', settings.baseURL);
+      throw new Error('Provider baseURL must be a string');
+    }
+    if (typeof settings.apiKey !== 'string') {
+      console.error('Invalid settings.apiKey type:', typeof settings.apiKey);
+      throw new Error('Provider API key must be a string');
+    }
 
     // Get grouping settings
     const groupingSettings = await chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup']);
@@ -480,19 +486,30 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       { role: 'user', content: JSON.stringify(tabsData) }
     ];
 
-    // Build complete API URL
+    // Build complete API URL  
     const apiUrl = buildApiUrl(settings.baseURL, settings.endpoint);
+    
+    // Validate request parameters
+    if (typeof settings.apiKey !== 'string') {
+      throw new Error(`API key must be a string, got ${typeof settings.apiKey}`);
+    }
+    if (typeof settings.selectedModel !== 'string') {
+      throw new Error(`Model must be a string, got ${typeof settings.selectedModel}`);
+    }
+    
+    const requestBody = JSON.stringify({
+      model: settings.selectedModel,
+      messages: messages,
+      response_format: { type: 'json_object' }
+    });
+    
     const res = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${settings.apiKey}`
       },
-      body: JSON.stringify({
-        model: settings.selectedModel,
-        messages: messages,
-        response_format: { type: 'json_object' }
-      })
+      body: requestBody
     });
 
 
@@ -537,18 +554,24 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       throw new Error('No valid groups found in AI response');
     }
   } catch (e: any) {
-    const appError = errorHandler.handle(e, 'initiateAndGroupTabs', { windowId });
+    console.error('Failed to initiate and group tabs:', e);
+    const errorMessage = e instanceof Error ? e.message : 'Auto-grouping failed';
     // Notify UI if available; ignore when no receiver exists
     void chrome.runtime
-      .sendMessage({ type: 'GROUPING_FINISHED', success: false, error: appError.userMessage })
+      .sendMessage({ type: 'GROUPING_FINISHED', success: false, error: errorMessage })
       .catch(() => {});
-    throw new Error(appError.userMessage);
+    throw new Error(errorMessage);
   }
 }
 
 function buildApiUrl(baseURL: string, endpoint?: string): string {
   if (!baseURL) {
     throw new Error('Base URL is required');
+  }
+  
+  if (typeof baseURL !== 'string') {
+    console.error('Invalid baseURL passed to buildApiUrl:', baseURL);
+    throw new Error(`Base URL must be a string, got ${typeof baseURL}`);
   }
   
   const cleanBaseURL = baseURL.replace(/\/$/, '');
@@ -565,34 +588,31 @@ function buildApiUrl(baseURL: string, endpoint?: string): string {
 }
 
 async function getCurrentProviderConfig(): Promise<any> {
-
-  return new Promise(resolve => {
-    chrome.storage.local.get(['selectedProvider', 'providers'], (result) => {
-      const selectedProvider = result.selectedProvider;
-      const providers = result.providers || {};
-      
-      if (!selectedProvider || !providers[selectedProvider]) {
-        resolve(null);
-        return;
+  try {
+    const result = await chrome.storage.local.get(['selectedProvider', 'providers']);
+    const selectedProvider = result.selectedProvider;
+    const providers = result.providers || {};
+    
+    if (!selectedProvider || !providers[selectedProvider]) {
+      return null;
+    }
+    
+    const providerConfig = { ...providers[selectedProvider] };
+    
+    // Decrypt API key using secure extension storage
+    if (providerConfig.apiKey) {
+      const decryptedKey = await extensionStorage.getApiKey(selectedProvider);
+      if (decryptedKey) {
+        providerConfig.apiKey = decryptedKey;
+      } else {
+        // Fallback: API key might still be stored in plain text (migration)
+        console.log('Using fallback API key (migration)');
       }
-      
-      const providerConfig = providers[selectedProvider];
-      
-      // Decrypt API key if exists using ES module secureStorage
-      if (providerConfig.apiKey) {
-        try {
-          providerConfig.apiKey = secureStorage.encryption.decrypt(providerConfig.apiKey);
-          if (!providerConfig.apiKey) {
-            throw new Error('Decryption returned empty result');
-          }
-        } catch (e) {
-          console.error('Failed to decrypt API key:', e);
-          resolve(null);
-          return;
-        }
-      }
-      
-      resolve(providerConfig);
-    });
-  });
+    }
+    
+    return providerConfig;
+  } catch (e) {
+    console.error('Failed to get provider config:', e);
+    return null;
+  }
 }

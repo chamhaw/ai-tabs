@@ -168,6 +168,10 @@
   "default_grouping_strategy": {
     "message": "根据标签页的内容和用途智能分组，例如将相同网站、相关主题或工作流程的标签页归类到一起。优先考虑用户的浏览模式和标签页之间的关联性。"
   },
+  "save": {
+    "message": "保存",
+    "description": "保存按钮"
+  },
   "save_settings": {
     "message": "保存",
     "description": "保存按钮文字"
