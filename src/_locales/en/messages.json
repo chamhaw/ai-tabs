@@ -16,7 +16,7 @@
     "message": "AI Tabs Settings"
   },
   "nav_general": {
-    "message": "General"
+    "message": "Settings"
   },
   "nav_providers": {
     "message": "Providers"
@@ -28,7 +28,13 @@
     "message": "About"
   },
   "general_description": {
-    "message": "Configure basic AI service settings and preferences"
+    "message": "Configure AI service settings and preferences"
+  },
+  "basic_settings": {
+    "message": "Basic Settings"
+  },
+  "performance_settings": {
+    "message": "Performance Settings"
   },
   "providers_description": {
     "message": "Manage AI model providers and related configurations"

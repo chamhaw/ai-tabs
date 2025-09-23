@@ -16,7 +16,7 @@
     "message": "AI Tabs 设置"
   },
   "nav_general": {
-    "message": "常规设置"
+    "message": "设置"
   },
   "nav_providers": {
     "message": "模型供应商"
@@ -28,7 +28,13 @@
     "message": "关于"
   },
   "general_description": {
-    "message": "配置基本的AI服务设置和偏好"
+    "message": "配置AI服务设置和偏好"
+  },
+  "basic_settings": {
+    "message": "基础设置"
+  },
+  "performance_settings": {
+    "message": "性能设置"
   },
   "providers_description": {
     "message": "管理AI模型供应商和相关配置"
