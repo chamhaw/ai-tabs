@@ -41,7 +41,7 @@ const Options = () => {
   // Initialize activePage from URL hash or default to 'general'
   const [activePage, setActivePage] = useState(() => {
     const hash = window.location.hash.replace('#', '');
-    const validPages = ['general', 'providers', 'advanced', 'about'];
+    const validPages = ['general', 'providers', 'about'];
     return validPages.includes(hash) ? hash : 'general';
   });
   const [activeTab, setActiveTab] = useState('current');
@@ -80,7 +80,7 @@ const Options = () => {
     // Listen for hash changes
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validPages = ['general', 'providers', 'advanced', 'about'];
+      const validPages = ['general', 'providers', 'about'];
       if (validPages.includes(hash) && hash !== activePage) {
         setActivePage(hash);
       }
@@ -606,11 +606,12 @@ const Options = () => {
   const renderGeneralPage = () => (
     <div className="content-page active" id="page-general">
       <div className="page-header">
-        <h3 data-i18n="nav_general">General</h3>
-        <p data-i18n="general_description">Configure basic AI service settings and preferences</p>
+        <h3 data-i18n="nav_general">Settings</h3>
+        <p data-i18n="general_description">Configure AI service settings and preferences</p>
       </div>
       
       <div className="settings-section">
+        <h4 data-i18n="basic_settings">Basic Settings</h4>
         <div className="form-group">
           <label htmlFor="languageSelect" data-i18n="language_setting">Language</label>
           <select 
@@ -623,6 +624,48 @@ const Options = () => {
             <option value="en" data-i18n="language_en">English</option>
           </select>
           <small className="form-description" data-i18n="language_setting_description">Reload extension after changing language</small>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h4 data-i18n="performance_settings">Performance Settings</h4>
+        <div className="form-group">
+          <label htmlFor="maxTabs" data-i18n="max_tabs">Max tabs</label>
+          <input 
+            type="number" 
+            id="maxTabs" 
+            min="1" 
+            max="100" 
+            value={advancedSettings.maxTabs}
+            onChange={(e) => handleAdvancedSettingChange('maxTabs', parseInt(e.target.value))}
+          />
+          <small className="form-description" data-i18n="max_tabs_description">Maximum number of tabs to process</small>
+        </div>
+        <div className="form-group checkbox-group">
+          <label htmlFor="autoSave" data-i18n="auto_save">Auto save</label>
+          <input 
+            type="checkbox" 
+            id="autoSave" 
+            checked={advancedSettings.autoSave}
+            onChange={(e) => handleAdvancedSettingChange('autoSave', e.target.checked)}
+          />
+          <small className="form-description" data-i18n="auto_save_description">Automatically save configuration changes</small>
+        </div>
+        <div className="form-group">
+          <label htmlFor="cacheTimeout" data-i18n="cache_timeout">Cache timeout (minutes)</label>
+          <input 
+            type="number" 
+            id="cacheTimeout" 
+            min="1" 
+            max="1440" 
+            value={advancedSettings.cacheTimeout}
+            onChange={(e) => handleAdvancedSettingChange('cacheTimeout', parseInt(e.target.value))}
+          />
+          <small className="form-description" data-i18n="cache_timeout_description">Validity period for model list cache</small>
+        </div>
+        <div className="form-actions">
+          <button onClick={clearCache} className="btn btn-secondary" data-i18n="clear_cache">Clear cache</button>
+          <button onClick={resetSettings} className="btn btn-secondary" data-i18n="reset_settings">Reset settings</button>
         </div>
       </div>
     </div>
@@ -878,56 +921,6 @@ const Options = () => {
     );
   };
 
-  const renderAdvancedPage = () => (
-    <div className="content-page active" id="page-advanced">
-      <div className="page-header">
-        <h3 data-i18n="nav_advanced">Advanced</h3>
-        <p data-i18n="advanced_description">Advanced features and performance settings</p>
-      </div>
-      <div className="settings-section">
-        <div className="advanced-settings-container">
-          <div className="form-group">
-            <label htmlFor="maxTabs" data-i18n="max_tabs">Max tabs</label>
-            <input 
-              type="number" 
-              id="maxTabs" 
-              min="1" 
-              max="100" 
-              value={advancedSettings.maxTabs}
-              onChange={(e) => handleAdvancedSettingChange('maxTabs', parseInt(e.target.value))}
-            />
-            <small className="form-description" data-i18n="max_tabs_description">Maximum number of tabs to process</small>
-          </div>
-          <div className="form-group checkbox-group">
-            <label htmlFor="autoSave" data-i18n="auto_save">Auto save</label>
-            <input 
-              type="checkbox" 
-              id="autoSave" 
-              checked={advancedSettings.autoSave}
-              onChange={(e) => handleAdvancedSettingChange('autoSave', e.target.checked)}
-            />
-            <small className="form-description" data-i18n="auto_save_description">Automatically save configuration changes</small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="cacheTimeout" data-i18n="cache_timeout">Cache timeout (minutes)</label>
-            <input 
-              type="number" 
-              id="cacheTimeout" 
-              min="1" 
-              max="1440" 
-              value={advancedSettings.cacheTimeout}
-              onChange={(e) => handleAdvancedSettingChange('cacheTimeout', parseInt(e.target.value))}
-            />
-            <small className="form-description" data-i18n="cache_timeout_description">Validity period for model list cache</small>
-          </div>
-        </div>
-        <div className="form-actions">
-          <button onClick={clearCache} className="btn btn-secondary" data-i18n="clear_cache">Clear cache</button>
-          <button onClick={resetSettings} className="btn btn-secondary" data-i18n="reset_settings">Reset settings</button>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderAboutPage = () => (
     <div className="content-page active" id="page-about">
@@ -960,8 +953,6 @@ const Options = () => {
         return renderGeneralPage();
       case 'providers':
         return renderProvidersPage();
-      case 'advanced':
-        return renderAdvancedPage();
       case 'about':
         return renderAboutPage();
       default:
@@ -1438,18 +1429,6 @@ const Options = () => {
               </button>
             </li>
             
-            <li className="nav-item">
-              <button 
-                className={`nav-button ${activePage === 'advanced' ? 'active' : ''}`} 
-                onClick={() => handleNavigation('advanced')}
-                data-i18n="nav_advanced"
-              >
-                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="12 2 15.09 8.26 22 9 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9 8.91 8.26 12 2"></polygon>
-                </svg>
-                <span data-i18n="nav_advanced">Advanced</span>
-              </button>
-            </li>
             
             <li className="nav-item">
               <button 
