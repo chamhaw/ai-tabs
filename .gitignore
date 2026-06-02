@@ -40,6 +40,8 @@ build/
 .env.production.local
 
 # package-lock.json
-# yarn.lock 
+# yarn.lock
 
 .cursor
+*.crx
+*.zip

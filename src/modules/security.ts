@@ -129,12 +129,10 @@ export class ExtensionSecureStorage {
   }
   
   private generateExtensionKey(): string {
-    // Use extension ID + device fingerprint for a stable key
-    const extensionId = chrome.runtime.id;
-    const deviceInfo = generateDeviceFingerprint();
-    
-    // Combine extension ID and device fingerprint
-    const combined = extensionId + '|' + deviceInfo + '|ai-tabs-secure';
+    // Use only chrome.runtime.id so the key is identical in both the options
+    // page and the service worker. Device fingerprint (screen/navigator) differs
+    // between contexts and corrupted the decrypted API key, causing 403s.
+    const combined = chrome.runtime.id + '|ai-tabs-secure';
     
     // Generate hash
     let hash = 0;
