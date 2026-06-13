@@ -166,12 +166,15 @@ class MockBackgroundScript {
     return cleanBaseURL + '/chat/completions';
   }
 
-  async groupTabs(groups, windowId) {
+  async groupTabs(groups, windowId, reuseExistingGroups = false, minTabsInGroup = 2) {
     const allWindowTabs = await chrome.tabs.query({ windowId, windowType: 'normal' });
     const allWindowTabGroups = await chrome.tabGroups.query({ windowId });
+    const candidateTabs = reuseExistingGroups
+      ? allWindowTabs.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE)
+      : allWindowTabs;
 
     const urlToTabsMap = new Map();
-    for (const tab of allWindowTabs) {
+    for (const tab of candidateTabs) {
       if (!tab.url) continue;
       if (!urlToTabsMap.has(tab.url)) {
         urlToTabsMap.set(tab.url, []);
@@ -179,18 +182,19 @@ class MockBackgroundScript {
       urlToTabsMap.get(tab.url).push(tab);
     }
 
-    const groupIdToTitle = new Map(allWindowTabGroups.map(g => [g.id, g.title]));
-    const tabsToMove = new Set();
-    const groupPlan = new Map();
+    const existingGroupMap = new Map(allWindowTabGroups.map(g => [g.title, g.id]));
+    let processedGroups = 0;
 
     for (const group of groups) {
       const groupName = group.name || 'AI Group';
-      
-      if (!groupPlan.has(groupName)) {
-        groupPlan.set(groupName, []);
-      }
-      
-      const tabIdsForThisGroup = groupPlan.get(groupName);
+      const tabIdsForThisGroup = [];
+      const existingGroupId = existingGroupMap.get(groupName);
+      const existingGroupTabCount = existingGroupId === undefined
+        ? 0
+        : allWindowTabs.filter(tab => tab.groupId === existingGroupId).length;
+      const requiredTabs = existingGroupId === undefined
+        ? minTabsInGroup
+        : Math.max(1, minTabsInGroup - existingGroupTabCount);
       
       for (const tabInfo of group.tabs) {
         if (!tabInfo.url) continue;
@@ -198,31 +202,27 @@ class MockBackgroundScript {
         const availableTabs = urlToTabsMap.get(tabInfo.url);
         
         if (availableTabs && availableTabs.length > 0) {
-          for (const tab of availableTabs) {
+          const tab = availableTabs.shift();
+          if (tab && tab.id !== undefined) {
             tabIdsForThisGroup.push(tab.id);
-            const currentGroupName = groupIdToTitle.get(tab.groupId);
-            
-            if (currentGroupName !== groupName) {
-              tabsToMove.add(tab.id);
-            }
           }
-          availableTabs.length = 0;
         }
       }
+
+      if (tabIdsForThisGroup.length < requiredTabs) {
+        continue;
+      }
+
+      if (reuseExistingGroups && existingGroupId !== undefined) {
+        await chrome.tabs.group({ tabIds: tabIdsForThisGroup, groupId: existingGroupId });
+      } else {
+        const newGroupId = await chrome.tabs.group({ tabIds: tabIdsForThisGroup });
+        await chrome.tabGroups.update(newGroupId, { title: groupName });
+      }
+      processedGroups += 1;
     }
 
-    if (tabsToMove.size > 0) {
-      await chrome.tabs.ungroup([...tabsToMove]);
-    }
-    
-    for (const [groupName, tabIdsInPlan] of groupPlan.entries()) {
-      const finalTabIds = tabIdsInPlan.filter(id => tabsToMove.has(id));
-
-      if (finalTabIds.length === 0) continue;
-
-      const newGroupId = await chrome.tabs.group({ tabIds: finalTabIds });
-      await chrome.tabGroups.update(newGroupId, { title: groupName });
-    }
+    return processedGroups;
   }
 
   async initiateAndGroupTabs(tabsToGroup, windowId) {
@@ -300,10 +300,13 @@ class MockBackgroundScript {
       const groupResult = aiResponse ? JSON.parse(aiResponse).groups : null;
 
       if (Array.isArray(groupResult)) {
-        const minTabs = settings.minTabsInGroup || 1;
+        const minTabs = settings.minTabsInGroup || 2;
         const filteredGroups = groupResult.filter(group => group.tabs && group.tabs.length >= minTabs);
         
-        await this.groupTabs(filteredGroups, windowId);
+        const processedGroups = await this.groupTabs(filteredGroups, windowId, false, minTabs);
+        if (processedGroups === 0) {
+          throw new Error(await getMessage('error_no_valid_groups'));
+        }
         return { success: true, groups: filteredGroups };
       } else {
         throw new Error(await getMessage('error_no_valid_groups'));
@@ -315,10 +318,13 @@ class MockBackgroundScript {
     const parsedResult = JSON.parse(groupResult).groups;
     
     if (Array.isArray(parsedResult)) {
-      const minTabs = settings.minTabsInGroup || 1;
+      const minTabs = settings.minTabsInGroup || 2;
       const filteredGroups = parsedResult.filter(group => group.tabs && group.tabs.length >= minTabs);
       
-      await this.groupTabs(filteredGroups, windowId);
+      const processedGroups = await this.groupTabs(filteredGroups, windowId, false, minTabs);
+      if (processedGroups === 0) {
+        throw new Error(await getMessage('error_no_valid_groups'));
+      }
       return { success: true, groups: filteredGroups };
     } else {
       throw new Error(await getMessage('error_no_valid_groups'));
@@ -500,22 +506,19 @@ describe('Background Script', () => {
         {
           name: '开发工具',
           tabs: [
-            { url: 'https://github.com/user/repo', title: 'GitHub Repository' }
+            { url: 'https://github.com/user/repo', title: 'GitHub Repository' },
+            { url: 'https://stackoverflow.com/questions/123', title: 'Stack Overflow Question' }
           ]
         }
       ];
 
       chrome.tabs.query.mockResolvedValue(mockTabs);
       chrome.tabs.group.mockResolvedValue(123);
-      chrome.tabs.ungroup.mockResolvedValue();
 
       await backgroundScript.groupTabs(mockGroups, 1);
 
-      expect(chrome.tabs.ungroup).toHaveBeenCalled();
       expect(chrome.tabs.group).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tabIds: expect.any(Array)
-        })
+        { tabIds: [1, 2] }
       );
       expect(chrome.tabGroups.update).toHaveBeenCalledWith(
         123,
@@ -544,6 +547,47 @@ describe('Background Script', () => {
       await backgroundScript.groupTabs([], 1);
 
       expect(chrome.tabs.query).toHaveBeenCalled();
+      expect(chrome.tabs.group).not.toHaveBeenCalled();
+    });
+
+    test('应该为相同URL的多个标签页分配不同tabId', async () => {
+      const duplicateUrlTabs = [
+        { id: 11, windowId: 1, url: 'https://docs.example.com/page', title: 'Doc A', groupId: -1 },
+        { id: 12, windowId: 1, url: 'https://docs.example.com/page', title: 'Doc A copy', groupId: -1 }
+      ];
+      const mockGroups = [
+        {
+          name: '文档',
+          tabs: [
+            { url: 'https://docs.example.com/page', title: 'Doc A' },
+            { url: 'https://docs.example.com/page', title: 'Doc A copy' }
+          ]
+        }
+      ];
+
+      chrome.tabs.query.mockResolvedValue(duplicateUrlTabs);
+      chrome.tabs.group.mockResolvedValue(456);
+
+      await backgroundScript.groupTabs(mockGroups, 1);
+
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [11, 12] });
+    });
+
+    test('应该按最少标签页阈值跳过不足数量的新分组', async () => {
+      const mockGroups = [
+        {
+          name: '单个标签页',
+          tabs: [
+            { url: 'https://github.com/user/repo', title: 'GitHub Repository' }
+          ]
+        }
+      ];
+
+      chrome.tabs.query.mockResolvedValue(mockTabs);
+
+      const processedGroups = await backgroundScript.groupTabs(mockGroups, 1, false, 2);
+
+      expect(processedGroups).toBe(0);
       expect(chrome.tabs.group).not.toHaveBeenCalled();
     });
   });
@@ -751,7 +795,8 @@ describe('Background Script', () => {
                 {
                   name: '测试分组',
                   tabs: [
-                    { url: 'https://github.com/user/repo', title: 'GitHub Repository' }
+                    { url: 'https://github.com/user/repo', title: 'GitHub Repository' },
+                    { url: 'https://stackoverflow.com/questions/123', title: 'Stack Overflow Question' }
                   ]
                 }
               ]
@@ -829,7 +874,8 @@ describe('Background Script', () => {
                 {
                   name: '测试分组',
                   tabs: [
-                    { url: 'https://github.com/user/repo', title: 'GitHub Repository' }
+                    { url: 'https://github.com/user/repo', title: 'GitHub Repository' },
+                    { url: 'https://stackoverflow.com/questions/123', title: 'Stack Overflow Question' }
                   ]
                 }
               ]

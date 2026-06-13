@@ -9,6 +9,8 @@ import { extensionStorage } from './modules/security';
 
 import { PROVIDERS, getProvider, createProviderConfig } from './config/providers';
 
+const SECURE_STORAGE_PLACEHOLDER = 'STORED_SECURELY';
+
 // Type definitions for component state
 interface FormState {
   baseURL: string;
@@ -74,6 +76,18 @@ const Options = () => {
     cacheTimeout: 30
   });
 
+  const resolveProviderApiKey = async (providerKey: string, providerConfig: any = {}) => {
+    const storedApiKey = typeof providerConfig.apiKey === 'string' ? providerConfig.apiKey : '';
+    const fallbackApiKey = storedApiKey && storedApiKey !== SECURE_STORAGE_PLACEHOLDER ? storedApiKey : '';
+
+    try {
+      const secureKey = await extensionStorage.getApiKey(providerKey);
+      return secureKey || fallbackApiKey || '';
+    } catch (e) {
+      return fallbackApiKey || '';
+    }
+  };
+
   useEffect(() => {
     initializeOptions();
     
@@ -137,14 +151,7 @@ const Options = () => {
           // Decrypt API key if needed (handle encrypted data)
           let decryptedConfig = { ...providerConfig };
           if (providerConfig.apiKey && typeof providerConfig.apiKey === 'string') {
-            // Try to get API key from secure storage
-            try {
-              const secureKey = await extensionStorage.getApiKey(basicResult.selectedProvider);
-              decryptedConfig.apiKey = secureKey || providerConfig.apiKey || '';
-            } catch (e) {
-              // Fallback to stored value (migration)
-              decryptedConfig.apiKey = providerConfig.apiKey || '';
-            }
+            decryptedConfig.apiKey = await resolveProviderApiKey(basicResult.selectedProvider, providerConfig);
           }
           
           setFormState(decryptedConfig);
@@ -241,7 +248,9 @@ const Options = () => {
       
       // Load provider config
       if (providers[provider]) {
-        setFormState(providers[provider]);
+        const providerConfig = providers[provider];
+        const resolvedApiKey = await resolveProviderApiKey(provider, providerConfig);
+        setFormState({ ...providerConfig, apiKey: resolvedApiKey });
         if (providers[provider].models) {
           setAvailableModels(providers[provider].models);
         } else {
@@ -354,14 +363,15 @@ const Options = () => {
 
       setAvailableModels(models);
       
-      // Update formState with models and save to storage
-      const updatedFormState = { ...formState, models };
-      setFormState(updatedFormState);
+      setFormState((prev: FormState) => ({ ...prev, models }));
       
-      // Save models to provider config
+      // Save only the fetched models cache and preserve secure API key storage.
       const updatedProviders = {
         ...providers,
-        [selectedProvider]: updatedFormState
+        [selectedProvider]: {
+          ...(providers[selectedProvider] || {}),
+          models
+        }
       };
       setProviders(updatedProviders);
       await chrome.storage.local.set({ providers: updatedProviders });
@@ -411,25 +421,28 @@ const Options = () => {
 
       // Prepare config to save
       const configToSave = { ...formState };
+      const apiKeyInput = typeof configToSave.apiKey === 'string' ? configToSave.apiKey.trim() : '';
       
       // Store API key securely
-      if (configToSave.apiKey && configToSave.apiKey.trim()) {
-        const apiKey = configToSave.apiKey.trim();
+      if (apiKeyInput && apiKeyInput !== SECURE_STORAGE_PLACEHOLDER) {
+        const apiKey = apiKeyInput;
         
         // Store in secure storage
         try {
           await extensionStorage.storeApiKey(selectedProvider, apiKey);
           // Mark that we have an API key but don't store the actual key in providers
-          configToSave.apiKey = 'STORED_SECURELY';
+          configToSave.apiKey = SECURE_STORAGE_PLACEHOLDER;
         } catch (e) {
           console.error('Failed to store API key securely:', e);
           showStatusMessage('Failed to store API key securely', 'error');
           return;
         }
+      } else if (apiKeyInput === SECURE_STORAGE_PLACEHOLDER) {
+        configToSave.apiKey = providers[selectedProvider]?.apiKey || SECURE_STORAGE_PLACEHOLDER;
       }
       
       // Set configured status based on whether we have both API key and base URL
-      configToSave.configured = !!(formState.apiKey && formState.apiKey.trim() && formState.baseURL && formState.baseURL.trim());
+      configToSave.configured = !!(configToSave.apiKey && configToSave.baseURL && configToSave.baseURL.trim());
       
       // Add provider name and default base URL if not present
       if (!configToSave.name) {
@@ -1200,13 +1213,7 @@ const Options = () => {
     const decryptedConfig = { ...config };
     
     // Try to get API key from secure storage
-    try {
-      const secureKey = await extensionStorage.getApiKey(providerKey);
-      decryptedConfig.apiKey = secureKey || config.apiKey || '';
-    } catch (e) {
-      // Fallback to stored value (migration)
-      decryptedConfig.apiKey = config.apiKey || '';
-    }
+    decryptedConfig.apiKey = await resolveProviderApiKey(providerKey, config);
     
     setModalForm(decryptedConfig);
     setModalAvailableModels(config.models || []);
@@ -1349,24 +1356,27 @@ const Options = () => {
         }
 
         const configToSave = { ...modalForm };
+        const apiKeyInput = typeof configToSave.apiKey === 'string' ? configToSave.apiKey.trim() : '';
         
         // Store API key securely
-        if (configToSave.apiKey && configToSave.apiKey.trim()) {
-          const apiKey = configToSave.apiKey.trim();
+        if (apiKeyInput && apiKeyInput !== SECURE_STORAGE_PLACEHOLDER) {
+          const apiKey = apiKeyInput;
           
           // Store in secure storage
           try {
             await extensionStorage.storeApiKey(modalProviderKey, apiKey);
             // Mark that we have an API key but don't store the actual key in providers
-            configToSave.apiKey = 'STORED_SECURELY';
+            configToSave.apiKey = SECURE_STORAGE_PLACEHOLDER;
           } catch (e) {
             console.error('Failed to store API key securely:', e);
             showStatusMessage('Failed to store API key securely', 'error');
             return;
           }
+        } else if (apiKeyInput === SECURE_STORAGE_PLACEHOLDER) {
+          configToSave.apiKey = providers[modalProviderKey]?.apiKey || SECURE_STORAGE_PLACEHOLDER;
         }
         
-        configToSave.configured = !!(modalForm.apiKey && modalForm.apiKey.trim() && modalForm.baseURL && modalForm.baseURL.trim());
+        configToSave.configured = !!(configToSave.apiKey && configToSave.baseURL && configToSave.baseURL.trim());
         configToSave.models = modalAvailableModels.length > 0 ? modalAvailableModels : providers[modalProviderKey]?.models || [];
         
         const updatedProviders = {

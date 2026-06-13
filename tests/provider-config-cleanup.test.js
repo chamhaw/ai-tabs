@@ -300,6 +300,46 @@ describe('Provider Configuration Cleanup Tests', () => {
       const retrievedProvider = await MockMultiProviderConfig.getProvider('openai');
       expect(retrievedProvider.apiKey).toBe('sensitive-api-key-123');
     });
+
+    test('should prefer decrypted secure key over placeholder when loading provider config', async () => {
+      const resolveProviderApiKey = (providerConfig, secureKey) => {
+        const storedApiKey = typeof providerConfig.apiKey === 'string' ? providerConfig.apiKey : '';
+        const fallbackApiKey = storedApiKey && storedApiKey !== 'STORED_SECURELY' ? storedApiKey : '';
+        return secureKey || fallbackApiKey || '';
+      };
+
+      const resolvedApiKey = resolveProviderApiKey(
+        { apiKey: 'STORED_SECURELY', baseURL: 'https://api.openai.com/v1' },
+        'real-secure-key'
+      );
+
+      expect(resolvedApiKey).toBe('real-secure-key');
+    });
+
+    test('should preserve placeholder in stored provider data when only refreshing models', () => {
+      const persistRefreshedModels = (providers, selectedProvider, models) => ({
+        ...providers,
+        [selectedProvider]: {
+          ...(providers[selectedProvider] || {}),
+          models
+        }
+      });
+
+      const updatedProviders = persistRefreshedModels(
+        {
+          openai: {
+            apiKey: 'STORED_SECURELY',
+            baseURL: 'https://api.openai.com/v1',
+            selectedModel: 'gpt-4'
+          }
+        },
+        'openai',
+        ['gpt-4', 'gpt-4.1']
+      );
+
+      expect(updatedProviders.openai.apiKey).toBe('STORED_SECURELY');
+      expect(updatedProviders.openai.models).toEqual(['gpt-4', 'gpt-4.1']);
+    });
   });
 
   describe('Model Loading Functionality', () => {
