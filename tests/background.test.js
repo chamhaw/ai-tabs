@@ -166,6 +166,38 @@ class MockBackgroundScript {
     return cleanBaseURL + '/chat/completions';
   }
 
+  normalizeGroupName(name) {
+    return String(name || '')
+      .normalize('NFKC')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '');
+  }
+
+  getGroupName(group) {
+    const name = typeof group?.name === 'string' ? group.name.trim() : '';
+    return name || 'AI Group';
+  }
+
+  mergeGroupsByName(groups) {
+    const mergedGroups = new Map();
+
+    for (const group of groups) {
+      const name = this.getGroupName(group);
+      const key = this.normalizeGroupName(name);
+      const tabs = Array.isArray(group?.tabs) ? group.tabs : [];
+      const existingGroup = mergedGroups.get(key);
+
+      if (existingGroup) {
+        existingGroup.tabs.push(...tabs);
+      } else {
+        mergedGroups.set(key, { name, key, tabs: [...tabs] });
+      }
+    }
+
+    return Array.from(mergedGroups.values());
+  }
+
   async groupTabs(groups, windowId, reuseExistingGroups = false, minTabsInGroup = 2) {
     const allWindowTabs = await chrome.tabs.query({ windowId, windowType: 'normal' });
     const allWindowTabGroups = await chrome.tabGroups.query({ windowId });
@@ -182,13 +214,19 @@ class MockBackgroundScript {
       urlToTabsMap.get(tab.url).push(tab);
     }
 
-    const existingGroupMap = new Map(allWindowTabGroups.map(g => [g.title, g.id]));
+    const existingGroupMap = new Map();
+    for (const group of allWindowTabGroups) {
+      const key = this.normalizeGroupName(group.title);
+      if (key && !existingGroupMap.has(key)) {
+        existingGroupMap.set(key, group.id);
+      }
+    }
     let processedGroups = 0;
 
-    for (const group of groups) {
-      const groupName = group.name || 'AI Group';
+    for (const group of this.mergeGroupsByName(groups)) {
+      const groupName = group.name;
       const tabIdsForThisGroup = [];
-      const existingGroupId = existingGroupMap.get(groupName);
+      const existingGroupId = existingGroupMap.get(group.key);
       const existingGroupTabCount = existingGroupId === undefined
         ? 0
         : allWindowTabs.filter(tab => tab.groupId === existingGroupId).length;
@@ -218,6 +256,7 @@ class MockBackgroundScript {
       } else {
         const newGroupId = await chrome.tabs.group({ tabIds: tabIdsForThisGroup });
         await chrome.tabGroups.update(newGroupId, { title: groupName });
+        existingGroupMap.set(group.key, newGroupId);
       }
       processedGroups += 1;
     }
@@ -407,6 +446,7 @@ describe('Background Script', () => {
 
     // Mock chrome.tabGroups API
     chrome.tabGroups = {
+      TAB_GROUP_ID_NONE: -1,
       query: jest.fn().mockResolvedValue([]),
       update: jest.fn().mockResolvedValue()
     };
@@ -589,6 +629,61 @@ describe('Background Script', () => {
 
       expect(processedGroups).toBe(0);
       expect(chrome.tabs.group).not.toHaveBeenCalled();
+    });
+
+    test('复用现有分组时应该忽略标题中的空白差异', async () => {
+      const tabs = [
+        { id: 1, windowId: 1, url: 'https://starlink.example.com/env', title: 'Starlink Env', groupId: 20 },
+        { id: 2, windowId: 1, url: 'https://starlink.example.com/deploy', title: 'Starlink Deploy', groupId: -1 }
+      ];
+      const mockGroups = [
+        {
+          name: 'Starlink 测试环境',
+          tabs: [
+            { url: 'https://starlink.example.com/deploy', title: 'Starlink Deploy' }
+          ]
+        }
+      ];
+
+      chrome.tabs.query.mockResolvedValue(tabs);
+      chrome.tabGroups.query.mockResolvedValue([{ id: 20, title: 'Starlink测试环境', windowId: 1 }]);
+
+      const processedGroups = await backgroundScript.groupTabs(mockGroups, 1, true, 2);
+
+      expect(processedGroups).toBe(1);
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [2], groupId: 20 });
+      expect(chrome.tabGroups.update).not.toHaveBeenCalled();
+    });
+
+    test('应该先合并AI返回中规范化后同名的分组', async () => {
+      const tabs = [
+        { id: 1, windowId: 1, url: 'https://starlink.example.com/env', title: 'Starlink Env', groupId: -1 },
+        { id: 2, windowId: 1, url: 'https://starlink.example.com/deploy', title: 'Starlink Deploy', groupId: -1 }
+      ];
+      const mockGroups = [
+        {
+          name: 'Starlink测试环境',
+          tabs: [
+            { url: 'https://starlink.example.com/env', title: 'Starlink Env' }
+          ]
+        },
+        {
+          name: 'Starlink 测试环境',
+          tabs: [
+            { url: 'https://starlink.example.com/deploy', title: 'Starlink Deploy' }
+          ]
+        }
+      ];
+
+      chrome.tabs.query.mockResolvedValue(tabs);
+      chrome.tabs.group.mockResolvedValue(123);
+
+      const processedGroups = await backgroundScript.groupTabs(mockGroups, 1, false, 2);
+
+      expect(processedGroups).toBe(1);
+      expect(chrome.tabs.group).toHaveBeenCalledTimes(1);
+      expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [1, 2] });
+      expect(chrome.tabGroups.update).toHaveBeenCalledWith(123, { title: 'Starlink测试环境' });
     });
   });
 

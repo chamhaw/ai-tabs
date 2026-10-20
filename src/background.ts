@@ -319,6 +319,38 @@ async function ungroupAllTabs(windowId: number) {
   }
 }
 
+function normalizeGroupName(name: unknown): string {
+  return String(name || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '');
+}
+
+function getGroupName(group: any): string {
+  const name = typeof group?.name === 'string' ? group.name.trim() : '';
+  return name || 'AI Group';
+}
+
+function mergeGroupsByName(groups: any[]): Array<{ name: string; key: string; tabs: any[] }> {
+  const mergedGroups = new Map<string, { name: string; key: string; tabs: any[] }>();
+
+  for (const group of groups) {
+    const name = getGroupName(group);
+    const key = normalizeGroupName(name);
+    const tabs = Array.isArray(group?.tabs) ? group.tabs : [];
+    const existingGroup = mergedGroups.get(key);
+
+    if (existingGroup) {
+      existingGroup.tabs.push(...tabs);
+    } else {
+      mergedGroups.set(key, { name, key, tabs: [...tabs] });
+    }
+  }
+
+  return Array.from(mergedGroups.values());
+}
+
 async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: boolean = false): Promise<number> {
   // Verify the window type before proceeding
   const window = await chrome.windows.get(windowId);
@@ -340,8 +372,9 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
   // Create a map of existing group names to their IDs
   const existingGroupMap = new Map<string, number>();
   existingGroups.forEach(group => {
-    if (group.title) {
-      existingGroupMap.set(group.title, group.id);
+    const key = normalizeGroupName(group.title);
+    if (key && !existingGroupMap.has(key)) {
+      existingGroupMap.set(key, group.id);
     }
   });
 
@@ -357,7 +390,7 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
   });
   let processedGroups = 0;
   
-  for (const group of groups) {
+  for (const group of mergeGroupsByName(groups)) {
     // Find actual tab IDs by matching URLs
     const tabIds: number[] = [];
     
@@ -379,7 +412,7 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
       }
     }
     
-    const existingGroupId = existingGroupMap.get(group.name);
+    const existingGroupId = existingGroupMap.get(group.key);
     const existingGroupTabCount = existingGroupId === undefined
       ? 0
       : allTabs.filter(tab => tab.groupId === existingGroupId).length;
@@ -431,6 +464,7 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
           );
           
           await chrome.tabGroups.update(newGroupId, { title: group.name });
+          existingGroupMap.set(group.key, newGroupId);
         }
         processedGroups += 1;
       } catch (error) {
