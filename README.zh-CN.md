@@ -38,7 +38,7 @@
 ## 📦 安装使用
 
 ### 从Chrome应用商店安装（推荐）
-1. 访问Chrome应用商店中的AI标签页管理器
+1. 访问Chrome应用商店中的[AI标签页管理器](https://chromewebstore.google.com/detail/ai-%E6%B5%8F%E8%A7%88%E5%99%A8%E6%A0%87%E7%AD%BE%E9%A1%B5%E7%AE%A1%E7%90%86%E5%99%A8/pjkjljebedjkcnojgpjhpnppokicnnnl)
 2. 点击"添加到Chrome"
 3. 确认安装权限
 
@@ -95,6 +95,6 @@
 
 ## 🔗 相关链接
 
-- [Chrome应用商店页面](#)
+- [Chrome应用商店页面](https://chromewebstore.google.com/detail/ai-%E6%B5%8F%E8%A7%88%E5%99%A8%E6%A0%87%E7%AD%BE%E9%A1%B5%E7%AE%A1%E7%90%86%E5%99%A8/pjkjljebedjkcnojgpjhpnppokicnnnl)
 - [GitHub仓库](https://github.com/chamhaw/ai-tabs)
 - [问题反馈](https://github.com/chamhaw/ai-tabs/issues)
