@@ -8,21 +8,8 @@
   "homepage_url": "https://github.com/chamhaw/ai-tabs",
   "permissions": ["tabs", "storage", "tabGroups", "alarms"],
   "optional_host_permissions": [
-    "https://api.openai.com/*",
-    "https://api.deepseek.com/*",
-    "https://api.anthropic.com/*",
-    "https://generativelanguage.googleapis.com/*",
-    "https://dashscope.aliyuncs.com/*",
-    "https://aip.baidubce.com/*",
-    "https://open.bigmodel.cn/*",
-    "https://api.moonshot.cn/*",
-    "https://api.lingyiwanwu.com/*",
-    "https://api.minimax.chat/*",
-    "https://ark.cn-beijing.volces.com/*",
-    "https://spark-api-open.xf-yun.com/*",
-    "https://api.sensenova.cn/*",
-    "https://api.stepfun.com/*",
-    "https://hunyuan.tencentcloudapi.com/*"
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -54,4 +41,4 @@
       "matches": ["<all_urls>"]
     }
   ]
-} 
+}

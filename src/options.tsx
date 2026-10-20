@@ -3,7 +3,7 @@ import FormField from './components/FormField';
 import PasswordInput from './components/PasswordInput';
 import ModelSelect from './components/ModelSelect';
 import FormModal from './components/FormModal';
-import { requestProviderPermissions, hasProviderPermissions } from './utils/permissions';
+import { requestProviderPermissions } from './utils/permissions';
 import { initI18n, getMessage } from './modules/i18n';
 import { extensionStorage } from './modules/security';
 
@@ -298,6 +298,13 @@ const Options = () => {
     setModelCacheStatus('refreshing');
     
     try {
+      // Request directly during the click; an async permission check can lose the user gesture.
+      const granted = await requestProviderPermissions(selectedProvider, formState.baseURL);
+      if (!granted) {
+        showStatusMessage('Network permissions required for this provider', 'error');
+        setModelCacheStatus('error');
+        return;
+      }
       showStatusMessage('Fetching model list...', 'info');
       
       // Build correct model endpoint URL
@@ -407,16 +414,11 @@ const Options = () => {
     if (!selectedProvider) return;
     
     try {
-      // Check and request permissions before saving
-      const customBaseURL = selectedProvider === 'custom' ? formState.baseURL : undefined;
-      const hasPermissions = await hasProviderPermissions(selectedProvider, customBaseURL);
-      
-      if (!hasPermissions) {
-        const granted = await requestProviderPermissions(selectedProvider, customBaseURL);
-        if (!granted) {
-          showStatusMessage('Network permissions required for this provider', 'error');
-          return;
-        }
+      // Already granted origins resolve without prompting again.
+      const granted = await requestProviderPermissions(selectedProvider, formState.baseURL);
+      if (!granted) {
+        showStatusMessage('Network permissions required for this provider', 'error');
+        return;
       }
 
       // Prepare config to save
@@ -1238,6 +1240,11 @@ const Options = () => {
     setModalLoadingModels(true);
     
     try {
+      const granted = await requestProviderPermissions(modalProviderKey, modalForm.baseURL);
+      if (!granted) {
+        showStatusMessage('Network permissions required for this provider', 'error');
+        return;
+      }
       let modelsUrl;
       const baseURL = modalForm.baseURL.trim();
       if (baseURL.endsWith('/v1')) {
@@ -1343,16 +1350,10 @@ const Options = () => {
     } else {
       // Config existing provider
       try {
-        // Check and request permissions before saving
-        const customBaseURL = modalProviderKey === 'custom' || modalProviderKey.startsWith('custom-') ? modalForm.baseURL : undefined;
-        const hasPermissions = await hasProviderPermissions(modalProviderKey, customBaseURL);
-        
-        if (!hasPermissions) {
-          const granted = await requestProviderPermissions(modalProviderKey, customBaseURL);
-          if (!granted) {
-            showStatusMessage('Network permissions required for this provider', 'error');
-            return;
-          }
+        const granted = await requestProviderPermissions(modalProviderKey, modalForm.baseURL);
+        if (!granted) {
+          showStatusMessage('Network permissions required for this provider', 'error');
+          return;
         }
 
         const configToSave = { ...modalForm };

@@ -3,14 +3,17 @@
  * Handles optional host permissions for provider domains
  */
 
-import { getProviderDomains, getProvider } from '../config/providers';
+import { getProviderDomains } from '../config/providers';
 
 /**
  * Extract domain pattern from custom base URL
  */
 function extractDomainPattern(baseURL: string): string {
   try {
-    const url = new URL(baseURL);
+    const url = new URL(baseURL.trim());
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      throw new Error('Provider URLs must use HTTP or HTTPS');
+    }
     return `${url.protocol}//${url.hostname}/*`;
   } catch (e) {
     throw new Error(`Invalid base URL: ${baseURL}`);
@@ -23,7 +26,7 @@ function extractDomainPattern(baseURL: string): string {
 export async function requestProviderPermissions(providerKey: string, customBaseURL?: string): Promise<boolean> {
   let origins: string[] = [];
 
-  if (providerKey === 'custom' && customBaseURL) {
+  if ((providerKey === 'custom' || providerKey.startsWith('custom-')) && customBaseURL) {
     origins = [extractDomainPattern(customBaseURL)];
   } else {
     origins = getProviderDomains(providerKey);
@@ -56,7 +59,7 @@ export async function requestProviderPermissions(providerKey: string, customBase
 export async function hasProviderPermissions(providerKey: string, customBaseURL?: string): Promise<boolean> {
   let origins: string[] = [];
 
-  if (providerKey === 'custom' && customBaseURL) {
+  if ((providerKey === 'custom' || providerKey.startsWith('custom-')) && customBaseURL) {
     origins = [extractDomainPattern(customBaseURL)];
   } else {
     origins = getProviderDomains(providerKey);
@@ -83,7 +86,7 @@ export async function hasProviderPermissions(providerKey: string, customBaseURL?
 export async function revokeProviderPermissions(providerKey: string, customBaseURL?: string): Promise<boolean> {
   let origins: string[] = [];
 
-  if (providerKey === 'custom' && customBaseURL) {
+  if ((providerKey === 'custom' || providerKey.startsWith('custom-')) && customBaseURL) {
     origins = [extractDomainPattern(customBaseURL)];
   } else {
     origins = getProviderDomains(providerKey);
