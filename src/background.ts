@@ -459,7 +459,7 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     const [window, settings, groupingSettings] = await Promise.all([
       chrome.windows.get(windowId),
       getCurrentProviderConfig(),
-      chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup'])
+      chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup', 'maxTabs'])
     ]);
     
     if (window.type !== 'normal') {
@@ -500,7 +500,8 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       tabsToGroup = tabsToGroup.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE);
     }
 
-    const tabsData = tabsToGroup.filter(tab => isGroupableTab(tab, windowId)).map(t => ({
+    const maxTabs = Number(groupingSettings.maxTabs) || 20;
+    const tabsData = tabsToGroup.filter(tab => isGroupableTab(tab, windowId)).slice(0, Math.max(1, maxTabs)).map(t => ({
       id: t.id!,
       url: t.url || '',
       title: (t.title || '').trim().substring(0, 200)

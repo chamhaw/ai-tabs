@@ -164,6 +164,7 @@ test('the popup explains that no tabs meet the grouping criteria', async () => {
 });
 
 test('a large batch uses compact IDs and groups duplicate URLs as separate tabs', async () => {
+  settings.maxTabs = 200;
   tabs = Array.from({ length: 200 }, (_, index) => ({
     id: index + 10, windowId: 1, groupId: -1,
     url: `https://example.com/article/${Math.floor(index / 2)}`, title: `Article ${index}`
@@ -178,6 +179,16 @@ test('a large batch uses compact IDs and groups duplicate URLs as separate tabs'
   expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: ids, createProperties: { windowId: 1 } });
   // Per-tab browser round trips must not grow with the size of the batch.
   expect(chrome.tabs.get).not.toHaveBeenCalled();
+});
+
+test('the configured maximum limits the actual grouping request and applied tabs', async () => {
+  settings.maxTabs = 2;
+  tabs = [10, 11, 12, 13].map(id => ({ id, windowId: 1, groupId: -1, url: `https://example.com/${id}`, title: `Article ${id}` }));
+  respondWith({ groups: [{ name: 'Articles', tabIds: [10, 11, 12, 13] }] });
+  expect(await startGrouping()).toMatchObject({ success: true });
+  const request = JSON.parse(fetch.mock.calls[0][1].body);
+  expect(JSON.parse(request.messages.find(message => message.role === 'user').content).map(tab => tab.id)).toEqual([10, 11]);
+  expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: [10, 11], createProperties: { windowId: 1 } });
 });
 
 test('only requested tabs still eligible in the target window can be grouped', async () => {

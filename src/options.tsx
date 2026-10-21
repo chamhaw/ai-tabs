@@ -6,12 +6,12 @@ const Options = () => {
   const [activePage, setActivePage] = useState(window.location.hash.slice(1) || 'general');
   const [language, setLanguage] = useState('auto');
   const [refreshKey, setRefreshKey] = useState(0);
-  const [advancedSettings, setAdvancedSettings] = useState({ maxTabs: 20, autoSave: false, cacheTimeout: 30 });
+  const [maxTabs, setMaxTabs] = useState(20);
 
   const loadAllSettings = async () => {
-    const result = await chrome.storage.local.get(['userLanguage', 'language', 'maxTabs', 'autoSave', 'cacheTimeout']);
+    const result = await chrome.storage.local.get(['userLanguage', 'language', 'maxTabs']);
     setLanguage(result.userLanguage || result.language || 'auto');
-    setAdvancedSettings({ maxTabs: result.maxTabs || 20, autoSave: result.autoSave || false, cacheTimeout: result.cacheTimeout || 30 });
+    setMaxTabs(result.maxTabs || 20);
   };
 
   useEffect(() => {
@@ -20,6 +20,8 @@ const Options = () => {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useEffect(() => { updateUITranslations(); }, [activePage, refreshKey]);
 
   const handleNavigation = (page: string) => {
     setActivePage(page);
@@ -58,17 +60,11 @@ const Options = () => {
     }
   };
 
-  const handleAdvancedSettingChange = (field: string, value: any) => {
-    const newSettings = { ...advancedSettings, [field]: value };
-    setAdvancedSettings(newSettings);
-    
-    // Auto-save advanced settings
-    chrome.storage.local.set({ [field]: value }).then(() => {
-      showStatusMessage('Advanced settings saved', 'success');
-    }).catch(error => {
-      console.error('Failed to save advanced setting:', error);
-      showStatusMessage('Failed to save advanced settings', 'error');
-    });
+  const handleMaxTabsChange = (value: number) => {
+    setMaxTabs(value);
+    chrome.storage.local.set({ maxTabs: value }).then(() => {
+      showStatusMessage('Settings saved', 'success');
+    }).catch(() => showStatusMessage('Failed to save settings', 'error'));
   };
 
   const clearCache = async () => {
@@ -87,6 +83,7 @@ const Options = () => {
       try {
         await chrome.storage.local.clear();
         await loadAllSettings();
+        await initI18n();
         setRefreshKey(value => value + 1);
         showStatusMessage('Settings reset successfully', 'success');
       } catch (error) {
@@ -166,32 +163,10 @@ const Options = () => {
             id="maxTabs" 
             min="1" 
             max="100" 
-            value={advancedSettings.maxTabs}
-            onChange={(e) => handleAdvancedSettingChange('maxTabs', parseInt(e.target.value))}
+            value={maxTabs}
+            onChange={(e) => handleMaxTabsChange(parseInt(e.target.value))}
           />
           <small className="form-description" data-i18n="max_tabs_description">Maximum number of tabs to process</small>
-        </div>
-        <div className="form-group checkbox-group">
-          <label htmlFor="autoSave" data-i18n="auto_save">Auto save</label>
-          <input 
-            type="checkbox" 
-            id="autoSave" 
-            checked={advancedSettings.autoSave}
-            onChange={(e) => handleAdvancedSettingChange('autoSave', e.target.checked)}
-          />
-          <small className="form-description" data-i18n="auto_save_description">Automatically save configuration changes</small>
-        </div>
-        <div className="form-group">
-          <label htmlFor="cacheTimeout" data-i18n="cache_timeout">Cache timeout (minutes)</label>
-          <input 
-            type="number" 
-            id="cacheTimeout" 
-            min="1" 
-            max="1440" 
-            value={advancedSettings.cacheTimeout}
-            onChange={(e) => handleAdvancedSettingChange('cacheTimeout', parseInt(e.target.value))}
-          />
-          <small className="form-description" data-i18n="cache_timeout_description">Validity period for model list cache</small>
         </div>
         <div className="form-actions">
           <button onClick={clearCache} className="btn btn-secondary" data-i18n="clear_cache">Clear cache</button>
@@ -201,30 +176,33 @@ const Options = () => {
     </div>
   );
 
-  const renderAboutPage = () => (
-    <div className="content-page active" id="page-about">
-      <div className="page-header">
-        <h3 data-i18n="nav_about">About AI Tabs</h3>
-        <p data-i18n="about_description">Extension info and docs</p>
-      </div>
-      <div className="settings-section">
-        <div className="about-content">
-          <div className="about-item">
-            <h4 data-i18n="version">Version</h4>
-            <p>v1.0.0</p>
-          </div>
-          <div className="about-item">
-            <h4 data-i18n="description">Description</h4>
-            <p data-i18n="app_description">Intelligent AI tab manager with multi-provider support</p>
-          </div>
-          <div className="about-item">
-            <h4>GitHub</h4>
-            <p><a href="https://github.com/ai-tabs/ai-tabs" target="_blank" rel="noopener noreferrer">https://github.com/ai-tabs/ai-tabs</a></p>
+  const renderAboutPage = () => {
+    const manifest = chrome.runtime.getManifest();
+    return (
+      <div className="content-page active" id="page-about">
+        <div className="page-header">
+          <h3 data-i18n="nav_about">About AI Tabs</h3>
+          <p data-i18n="about_description">Extension info and docs</p>
+        </div>
+        <div className="settings-section">
+          <div className="about-content">
+            <div className="about-item">
+              <h4 data-i18n="version">Version</h4>
+              <p>v{manifest.version}</p>
+            </div>
+            <div className="about-item">
+              <h4 data-i18n="description">Description</h4>
+              <p data-i18n="app_description">Group tabs using OpenAI or Anthropic compatible APIs</p>
+            </div>
+            <div className="about-item">
+              <h4>GitHub</h4>
+              <p><a href={manifest.homepage_url} target="_blank" rel="noopener noreferrer">{manifest.homepage_url}</a></p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPage = () => {
     switch (activePage) {
@@ -256,7 +234,6 @@ const Options = () => {
               <button 
                 className={`nav-button ${activePage === 'general' ? 'active' : ''}`} 
                 onClick={() => handleNavigation('general')}
-                data-i18n="nav_general"
               >
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -270,7 +247,6 @@ const Options = () => {
               <button 
                 className={`nav-button ${activePage === 'providers' ? 'active' : ''}`} 
                 onClick={() => handleNavigation('providers')}
-                data-i18n="nav_providers"
               >
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 19c-5 0-8-3-8-8s3-8 8-8 8 3 8 8-3 8-8 8z"></path>
@@ -286,7 +262,6 @@ const Options = () => {
               <button 
                 className={`nav-button ${activePage === 'about' ? 'active' : ''}`} 
                 onClick={() => handleNavigation('about')}
-                data-i18n="nav_about"
               >
                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"></circle>
