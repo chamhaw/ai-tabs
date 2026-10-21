@@ -54,11 +54,12 @@ async function ensureCorrectLanguage(i18nInstance: typeof customI18n): Promise<v
   }
 }
 
-async function buildSystemPrompt(reuseExistingGroups: boolean = false, existingGroups: chrome.tabGroups.TabGroup[] = []): Promise<string> {
+async function buildSystemPrompt(minTabsInGroup: number, reuseExistingGroups: boolean = false, existingGroups: chrome.tabGroups.TabGroup[] = []): Promise<string> {
   try {
     const intro = await getLocalizedMessage('system_prompt_intro');
     const formatInstructions = await getLocalizedMessage('system_prompt_format_instructions');
     const forbiddenRules = await getLocalizedMessage('system_prompt_forbidden_rules');
+    const minimumGroupSize = await getLocalizedMessage('system_prompt_min_tabs', String(minTabsInGroup));
     
     // Check if we got the actual translations or just the keys back
     if (intro === 'system_prompt_intro' || formatInstructions === 'system_prompt_format_instructions') {
@@ -78,7 +79,9 @@ async function buildSystemPrompt(reuseExistingGroups: boolean = false, existingG
 
 ${existingGroupsInstruction ? existingGroupsInstruction + '\n\n' : ''}${formatInstructions}
 
-${forbiddenRules}`;
+${forbiddenRules}
+
+${minimumGroupSize}`;
     
     return systemPrompt;
   } catch (error) {
@@ -389,6 +392,7 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
     availableTabsByUrl.set(tab.url, tabsForUrl);
   });
   let processedGroups = 0;
+  let groupingError: Error | undefined;
   
   for (const group of mergeGroupsByName(groups)) {
     // Find actual tab IDs by matching URLs
@@ -468,11 +472,15 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
         }
         processedGroups += 1;
       } catch (error) {
-        // Silently skip failed groups to avoid console spam
+        // Keep trying other groups, but do not report an operation failure as no matches.
+        groupingError = error instanceof Error ? error : new Error(String(error));
       }
     }
   }
 
+  if (processedGroups === 0 && groupingError) {
+    throw groupingError;
+  }
   return processedGroups;
 }
 
@@ -503,7 +511,8 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     // Get grouping settings
     const groupingSettings = await chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup']);
     const reuseExistingGroups = groupingSettings.reuseExistingGroups !== false; // default true
-    const minTabsInGroup = groupingSettings.minTabsInGroup || 2;
+    const configuredMinTabs = Number(groupingSettings.minTabsInGroup);
+    const minTabsInGroup = Number.isFinite(configuredMinTabs) && configuredMinTabs >= 1 ? configuredMinTabs : 2;
 
     if (!tabsToGroup) {
       tabsToGroup = await chrome.tabs.query({ windowId });
@@ -540,7 +549,7 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     }
 
     // Build localized system prompt
-    const systemPrompt = await buildSystemPrompt(reuseExistingGroups, existingGroups);
+    const systemPrompt = await buildSystemPrompt(minTabsInGroup, reuseExistingGroups, existingGroups);
     const messages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: JSON.stringify(tabsData) }
@@ -604,18 +613,17 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       throw new Error('AI response does not contain valid groups array. Please check AI provider settings and try again.');
     }
 
-    if (Array.isArray(groupResult) && groupResult.length > 0) {
-      const processedGroups = await groupTabs(groupResult, windowId, reuseExistingGroups);
-      if (processedGroups === 0) {
-        throw new Error('No valid groups found in AI response');
-      }
-      // Notify UI if available; ignore when no receiver exists
-      void chrome.runtime
-        .sendMessage({ type: 'GROUPING_FINISHED', success: true })
-        .catch(() => {});
-    } else {
-      throw new Error('No valid groups found in AI response');
-    }
+    // A valid response may have no groups that meet the user's minimum size.
+    const processedGroups = groupResult.length > 0
+      ? await groupTabs(groupResult, windowId, reuseExistingGroups)
+      : 0;
+    // Notify UI if available; ignore when no receiver exists.
+    void chrome.runtime
+      .sendMessage({
+        type: 'GROUPING_FINISHED', success: true,
+        ...(processedGroups === 0 ? { messageKey: 'grouping_no_matches' } : {})
+      })
+      .catch(() => {});
   } catch (e: any) {
     console.error('Failed to initiate and group tabs:', e);
     const errorMessage = e instanceof Error ? e.message : 'Auto-grouping failed';

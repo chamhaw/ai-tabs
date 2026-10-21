@@ -80,9 +80,9 @@ const Popup = () => {
       if (request.type === 'GROUPING_FINISHED') {
         setLoading(false);
         if (request.success) {
-          const successMessage = await getMessage('log_grouping_completed');
+          const successMessage = await getMessage(request.messageKey || 'log_grouping_completed');
           setStatus(successMessage);
-          setStatusType('success');
+          setStatusType(request.messageKey === 'grouping_no_matches' ? 'info' : 'success');
         } else {
           const failedMessage = await getMessage('grouping_failed', request.error);
           setStatus(failedMessage);

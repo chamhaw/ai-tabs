@@ -361,6 +361,14 @@
     "message": "分组完成成功",
     "description": "分组完成日志消息"
   },
+  "grouping_no_matches": {
+    "message": "没有符合当前分组条件的标签组。",
+    "description": "分组完成但没有符合条件的标签组"
+  },
+  "system_prompt_min_tabs": {
+    "message": "新建分组必须至少包含 $1 个标签页。相关标签页可以加入现有分组。如果无法形成有明确主题的分组，请返回 {\"groups\": []}。",
+    "description": "最小分组数量与空结果指令"
+  },
 
   
   "system_prompt_intro": {
@@ -907,4 +915,4 @@
     "message": "系统提示词生成失败",
     "description": "系统提示词生成失败错误文本"
   }
-} 
+}

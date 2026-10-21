@@ -359,6 +359,14 @@
     "message": "Grouping completed successfully",
     "description": "Grouping completion log message"
   },
+  "grouping_no_matches": {
+    "message": "No tab groups meet the current grouping criteria.",
+    "description": "Grouping completed without any eligible groups"
+  },
+  "system_prompt_min_tabs": {
+    "message": "New groups must contain at least $1 tabs. Related tabs may be added to existing groups. If no meaningful groups can be formed, return {\"groups\": []}.",
+    "description": "Minimum group size and empty result instructions"
+  },
   
   "system_prompt_intro": {
     "message": "Please intelligently group the tab information (URLs and titles) by organizing related content together.",
@@ -905,4 +913,4 @@
     "message": "System prompt generation failed",
     "description": "System prompt generation failed error text"
   }
-} 
+}
