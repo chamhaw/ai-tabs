@@ -18,7 +18,7 @@ function loadSource(relativePath) {
   }).outputText;
   const sourceRequire = (id) => {
     if (id.endsWith('/modules/i18n')) return { initI18n: async () => {}, getMessage: (key) => key };
-    if (id.endsWith('/modules/security')) return { extensionStorage: { getApiKey: async () => 'test-key', storeApiKey } };
+    if (id.endsWith('/modules/security')) return { extensionStorage: { getApiKey: async () => 'test-key', storeApiKey, removeApiKey: async key => chrome.storage.local.remove([`secure_api_${key}`]) } };
     if (!id.startsWith('.')) return require(id);
     const target = path.resolve(path.dirname(filename), id);
     return loadSource(fs.existsSync(`${target}.ts`) ? `${target}.ts` : `${target}.tsx`);
@@ -28,18 +28,22 @@ function loadSource(relativePath) {
 }
 
 const Options = loadSource('options.tsx').default;
-const permissions = loadSource('utils/permissions.ts');
 const baseURL = 'https://provider.example/v1';
 const origins = ['https://provider.example/*'];
 let root;
 
 beforeEach(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  crypto.randomUUID = jest.fn(() => 'new-connection');
   window.location.hash = '#providers';
   chrome.permissions.request.mockReset();
   chrome.permissions.contains.mockReset();
   chrome.permissions.remove.mockReset();
   chrome.storage.local.set.mockResolvedValue();
+  storeApiKey.mockClear();
+  fetch.mockReset();
+  chrome.storage.local.set.mockClear();
+  chrome.storage.local.remove.mockResolvedValue();
   AbortSignal.timeout = jest.fn(() => undefined);
 });
 
@@ -48,89 +52,93 @@ afterEach(async () => {
   root = undefined;
 });
 
-async function openRefreshButton(providerKey, modal = false) {
-  chrome.storage.local.get.mockResolvedValue({
-    selectedProvider: providerKey,
-    providers: { [providerKey]: { baseURL, apiKey: 'STORED_SECURELY', models: [] } }
-  });
+
+async function openSettings(providers = {}, selectedProvider = '') {
+  chrome.storage.local.get.mockResolvedValue({ providers, selectedProvider });
   document.body.innerHTML = '<div id="root"></div>';
   root = createRoot(document.getElementById('root'));
   await act(async () => root.render(React.createElement(Options)));
-  if (modal) {
-    await act(async () => document.querySelector('[data-i18n="tab_manage_providers"]').click());
-    await act(async () => document.querySelector('[title="Configure provider"]').click());
-  } else {
-    await act(async () => document.getElementById('configureProviderBtn').click());
-  }
-  return document.querySelector('.model-refresh-btn');
 }
 
-test('custom HTTP and HTTPS hosts can be requested without granting all hosts on install', () => {
+async function input(id, value) {
+  const element = document.getElementById(id);
+  const setter = Object.getOwnPropertyDescriptor(
+    element.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype, 'value'
+  ).set;
+  await act(async () => {
+    setter.call(element, value);
+    element.dispatchEvent(new Event(element.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+  });
+}
+
+async function fillConnection() {
+  await input('connectionName', 'My work API');
+  await input('connectionProtocol', 'anthropic');
+  await input('connectionEndpoint', baseURL + '/messages');
+  await input('connectionApiKey', 'new-key');
+  await input('connectionModel', 'work-model');
+}
+
+test('the settings start empty and offer only two protocols when adding a named connection', async () => {
+  await openSettings();
+  expect(document.querySelectorAll('.provider-item')).toHaveLength(0);
+  await act(async () => document.getElementById('addConnection').click());
+  expect(Array.from(document.getElementById('connectionProtocol').options).map(o => o.value))
+    .toEqual(['openai', 'anthropic']);
+  await fillConnection();
+  let approve;
+  chrome.permissions.request.mockImplementation(() => new Promise(resolve => { approve = resolve; }));
+  await act(async () => {
+    document.getElementById('saveConnection').click();
+    expect(chrome.permissions.request).toHaveBeenCalledWith({ origins });
+    expect(storeApiKey).not.toHaveBeenCalled();
+    approve(true);
+  });
+  const saved = chrome.storage.local.set.mock.calls.map(([value]) => value).find(value => value.providers);
+  expect(Object.values(saved.providers)).toEqual([expect.objectContaining({
+    name: 'My work API', protocol: 'anthropic', baseURL: baseURL + '/messages',
+    apiKey: 'STORED_SECURELY', selectedModel: 'work-model'
+  })]);
+  expect(saved.selectedProvider).toBe(Object.keys(saved.providers)[0]);
+  expect(storeApiKey).toHaveBeenCalledWith(saved.selectedProvider, 'new-key');
+  expect(JSON.stringify(saved)).not.toContain('new-key');
+});
+
+test('denied access leaves the form editable and does not save credentials', async () => {
+  await openSettings();
+  await act(async () => document.getElementById('addConnection').click());
+  await fillConnection();
+  chrome.permissions.request.mockResolvedValue(false);
+  await act(async () => document.getElementById('saveConnection').click());
+  expect(storeApiKey).not.toHaveBeenCalled();
+  expect(chrome.storage.local.set).not.toHaveBeenCalled();
+  expect(document.getElementById('saveConnection').disabled).toBe(false);
+});
+
+test('existing named connections can be selected, edited and deleted without losing another key', async () => {
+  await openSettings({
+    'custom-123': { name: 'Personal', protocol: 'openai', baseURL, apiKey: 'STORED_SECURELY', selectedModel: 'm1' },
+    anthropic: { name: 'Work', baseURL, endpoint: '/messages', apiKey: 'STORED_SECURELY', selectedModel: 'm2' }
+  }, 'custom-123');
+  await input('connectionSelect', 'anthropic');
+  expect(chrome.storage.local.set).toHaveBeenCalledWith({ selectedProvider: 'anthropic' });
+  await act(async () => document.querySelector('[data-edit="anthropic"]').click());
+  expect(document.getElementById('connectionProtocol').value).toBe('anthropic');
+  expect(document.getElementById('connectionEndpoint').value).toBe(baseURL + '/messages');
+  await input('connectionName', 'Office');
+  chrome.permissions.request.mockResolvedValue(true);
+  await act(async () => document.getElementById('saveConnection').click());
+  expect(document.body.textContent).toContain('Office');
+  global.confirm = jest.fn(() => true);
+  await act(async () => document.querySelector('[data-delete="anthropic"]').click());
+  const saved = chrome.storage.local.set.mock.calls.map(([value]) => value).filter(value => value.providers).pop();
+  expect(Object.keys(saved.providers)).toEqual(['custom-123']);
+  expect(saved.selectedProvider).toBe('');
+  expect(chrome.storage.local.remove).toHaveBeenCalledWith(['secure_api_anthropic']);
+});
+
+test('host access is optional at install time', () => {
   const manifest = require('../src/manifest.json');
   expect(manifest.optional_host_permissions).toEqual(expect.arrayContaining(['https://*/*', 'http://*/*']));
   expect(manifest.host_permissions || []).not.toContain('<all_urls>');
-});
-
-test.each(['custom', 'custom-123'])(
-  'refreshing %s models waits for domain approval and shows returned models',
-  async (providerKey) => {
-    const button = await openRefreshButton(providerKey);
-    let approve;
-    chrome.permissions.request.mockImplementation(() => new Promise(resolve => { approve = resolve; }));
-    fetch.mockResolvedValue({ ok: true, json: async () => ({ data: [{ id: 'example-model' }] }) });
-    await act(async () => {
-      button.click();
-      // A permission request must start during the click, before any async work.
-      expect(chrome.permissions.request).toHaveBeenCalledWith({ origins });
-      expect(fetch).not.toHaveBeenCalled();
-      approve(true);
-    });
-    expect(fetch).toHaveBeenCalledWith(`${baseURL}/models`, expect.objectContaining({
-      headers: expect.objectContaining({ Authorization: 'Bearer test-key' })
-    }));
-    expect(document.getElementById('modelSelect').textContent).toContain('example-model');
-  }
-);
-
-test.each([false, true])('denying model refresh permission prevents any request (modal=%s)', async (modal) => {
-  const button = await openRefreshButton(modal ? 'openai' : 'custom-123', modal);
-  chrome.permissions.request.mockResolvedValue(false);
-  await act(async () => button.click());
-  expect(chrome.permissions.request).toHaveBeenCalled();
-  expect(fetch).not.toHaveBeenCalled();
-  expect(document.getElementById('status-message').textContent).toMatch(/permissions required/i);
-  expect(button.disabled).toBe(false);
-});
-
-test('the provider modal also requests permission before loading models', async () => {
-  const button = await openRefreshButton('openai', true);
-  chrome.permissions.request.mockResolvedValue(true);
-  fetch.mockResolvedValue({ ok: true, json: async () => ({ data: [{ id: 'modal-model' }] }) });
-  await act(async () => {
-    button.click();
-    expect(chrome.permissions.request).toHaveBeenCalledWith({ origins: ['https://api.openai.com/*'] });
-    expect(fetch).not.toHaveBeenCalled();
-  });
-  expect(document.getElementById('modalSelectedModel').textContent).toContain('modal-model');
-});
-
-test('saved custom providers use their URL for permission checks and removal', async () => {
-  chrome.permissions.contains.mockResolvedValue(true);
-  chrome.permissions.remove.mockResolvedValue(true);
-  await expect(permissions.hasProviderPermissions('custom-123', baseURL)).resolves.toBe(true);
-  await expect(permissions.revokeProviderPermissions('custom-123', baseURL)).resolves.toBe(true);
-  expect(chrome.permissions.contains).toHaveBeenCalledWith({ origins });
-  expect(chrome.permissions.remove).toHaveBeenCalledWith({ origins });
-});
-
-test('saving a custom provider requests access during the click and preserves secure key storage', async () => {
-  await openRefreshButton('custom-123');
-  chrome.permissions.request.mockResolvedValue(true);
-  await act(async () => {
-    document.querySelector('.form-actions .btn-primary').click();
-    expect(chrome.permissions.request).toHaveBeenCalledWith({ origins });
-  });
-  expect(chrome.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({ providers: {
-    'custom-123': expect.objectContaining({ baseURL, apiKey: 'STORED_SECURELY' })
-  } }));
 });

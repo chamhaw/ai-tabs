@@ -1,61 +1,38 @@
-import { generateText, Output } from 'ai';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { createDeepSeek } from '@ai-sdk/deepseek';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { ConnectionConfig, connectionEndpoint, connectionProtocol } from '../config/connections';
 
-interface ModelConfig {
-  providerId: string;
-  baseURL: string;
-  apiKey: string;
-  selectedModel: string;
-  endpoint?: string;
-}
-
-export async function generateJson(config: ModelConfig, instructions: string, prompt: string): Promise<string> {
-  const baseURL = config.baseURL.replace(/\/$/, '');
-  const basePath = new URL(baseURL).pathname;
-  const isGoogle = config.providerId === 'google';
-  const isAnthropic = config.providerId === 'anthropic' || config.endpoint === '/messages' || basePath.endsWith('/messages');
-  const endpoint = config.endpoint || (isAnthropic ? '/messages' : '/chat/completions');
-  const requestURL = /\/(chat\/completions|messages)$/.test(basePath) ? baseURL : baseURL + endpoint;
-
-  // SDKs may map "none" to low/minimal when a model cannot disable thinking.
-  // Check the actual outbound request, so this policy never silently turns into low effort.
-  const transport: typeof fetch = async (url, options) => {
-    const body = JSON.parse(String(options?.body));
-    const thinking = body.thinking;
-    const googleThinking = body.generationConfig?.thinkingConfig;
-    if ((thinking && thinking.type !== 'disabled') ||
-        (isAnthropic && body.output_config?.effort && thinking?.type !== 'disabled') ||
-        (googleThinking && (googleThinking.thinkingLevel || googleThinking.thinkingBudget > 0))) {
-      throw new Error('This model cannot disable thinking. Choose a non-thinking model.');
+export async function generateJson(config: ConnectionConfig, instructions: string, prompt: string): Promise<string> {
+  const anthropic = connectionProtocol(config) === 'anthropic';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  let body: Record<string, unknown>;
+  if (anthropic) {
+    Object.assign(headers, {
+      'x-api-key': config.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    });
+    body = {
+      model: config.selectedModel, max_tokens: 4096, system: instructions,
+      messages: [{ role: 'user', content: prompt }], thinking: { type: 'disabled' }
+    };
+  } else {
+    headers.authorization = `Bearer ${config.apiKey}`;
+    body = {
+      model: config.selectedModel,
+      messages: [{ role: 'system', content: instructions }, { role: 'user', content: prompt }],
+      response_format: { type: 'json_object' }
+    };
+    // DeepSeek's compatible API uses a separate switch; effort alone does not turn thinking off.
+    if (/deepseek/i.test(config.selectedModel)) body.thinking = { type: 'disabled' };
+    else if (!/(?:^|\/)(?:gpt-(?:3\.5|4(?:\.1|\.5|o)?)(?:-|$)|chatgpt-4o(?:-|$))/i.test(config.selectedModel)) {
+      body.reasoning_effort = 'none';
     }
-    return fetch(isGoogle ? url : requestURL, options);
-  };
-  const settings = { baseURL, apiKey: config.apiKey, fetch: transport };
-  // Provider identity selects the wire protocol; SDK types stay inside this module.
-  const model = isGoogle
-    ? createGoogleGenerativeAI(settings)(config.selectedModel)
-    : isAnthropic
-      ? createAnthropic(settings)(config.selectedModel)
-      : config.providerId === 'deepseek' || /deepseek/i.test(config.selectedModel)
-        ? createDeepSeek(settings)(config.selectedModel)
-        : createOpenAICompatible({ ...settings, name: 'custom' })(config.selectedModel);
-  // These GPT models have no reasoning mode and reject reasoning_effort.
-  // A generic compatible provider cannot infer that capability from its protocol.
-  const nonReasoningGPT = /(?:^|\/)(?:gpt-(?:3\.5|4(?:\.1|\.5|o)?)(?:-|$)|chatgpt-4o(?:-|$))/i.test(config.selectedModel);
-  const result = await generateText({
-    model,
-    instructions,
-    prompt,
-    reasoning: nonReasoningGPT ? undefined : 'none',
-    output: Output.json(),
-    maxRetries: 0,
-    telemetry: { isEnabled: false }
-  });
-  if (result.reasoningText || (result.usage.outputTokenDetails.reasoningTokens ?? 0) > 0) {
-    throw new Error('The provider did not disable thinking. Choose a non-thinking model.');
   }
-  return JSON.stringify(result.output);
+  const response = await fetch(connectionEndpoint(config), { method: 'POST', headers, body: JSON.stringify(body) });
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+  const data = await response.json();
+  const content = anthropic
+    ? data.content?.filter((block: { type: string }) => block.type === 'text').map((block: { text: string }) => block.text).join('')
+    : data.choices?.[0]?.message?.content;
+  if (typeof content !== 'string' || !content.trim()) throw new Error('Model returned no text');
+  return content;
 }

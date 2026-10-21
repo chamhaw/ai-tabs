@@ -11,7 +11,7 @@ tests/
 │   └── chrome-mocks.js        # Chrome API的mock helper
 ├── security.test.js           # 安全模块测试
 ├── i18n.test.js              # 国际化模块测试
-├── options-provider.test.js   # 选项页面供应商配置测试
+├── provider-permissions.test.js # 连接配置与端点授权测试
 ├── background.test.js         # 后台脚本测试
 ├── popup.test.js             # 弹窗脚本测试
 ├── key-corruption-fix.test.js # API密钥损坏修复功能测试
@@ -64,12 +64,10 @@ npm run test:ci
 - ✅ 回退机制
 - ✅ 初始化流程
 
-### 3. 供应商配置 (`options-provider.test.js`)
-- ✅ 多供应商配置管理
-- ✅ API密钥加密存储
-- ✅ 模型列表加载
-- ✅ 配置验证
-- ✅ 错误处理
+### 3. 连接配置 (`provider-permissions.test.js`)
+- 自定义命名连接，选择 OpenAI 或 Anthropic 兼容协议
+- 端点授权通过后保存密钥，拒绝授权时保持表单可用
+- 已保存连接的选择、编辑和删除
 
 ### 4. 后台脚本 (`background.test.js`)
 - ✅ 标签页智能分组

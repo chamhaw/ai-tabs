@@ -4,10 +4,9 @@
     "description": "Extension name"
   },
   "ext_description": {
-    "message": "Smart AI-powered tab grouping manager, supports 15+ providers including OpenAI/DeepSeek, automatically categorizes tabs to boost browsing efficiency.",
+    "message": "Group browser tabs using your own OpenAI or Anthropic compatible API connections.",
     "description": "Extension description"
   },
-  
   "settings": {
     "message": "Settings",
     "description": "Settings page title"
@@ -19,7 +18,7 @@
     "message": "Settings"
   },
   "nav_providers": {
-    "message": "Providers"
+    "message": "Connections"
   },
   "nav_advanced": {
     "message": "Advanced"
@@ -121,10 +120,6 @@
     "message": "Custom Providers",
     "description": "Custom providers list title"
   },
-  "builtin_providers": {
-    "message": "Built-in Providers",
-    "description": "Built-in providers list title"
-  },
   "configure_provider_modal_title": {
     "message": "Configure Provider",
     "description": "Configure provider modal title"
@@ -132,10 +127,6 @@
   "add_custom_provider_modal_title": {
     "message": "Add Custom Provider",
     "description": "Add custom provider modal title"
-  },
-  "no_providers_message": {
-    "message": "Please add a custom provider or configure a built-in provider in \"Current Config\"",
-    "description": "Message when no providers are configured"
   },
   "api_key_status": {
     "message": "API Key Status",
@@ -206,7 +197,6 @@
     "message": "Save Provider",
     "description": "Save provider button text"
   },
-
   "provider_base_url": {
     "message": "API Base URL"
   },
@@ -228,7 +218,6 @@
   "provider_models_description": {
     "message": "Enter one model name per line, leave empty to auto-fetch from API"
   },
-
   "max_tabs": {
     "message": "Maximum Tab Count"
   },
@@ -251,7 +240,7 @@
     "message": "Description"
   },
   "app_description": {
-    "message": "Intelligent AI tab management extension with multiple AI service provider support"
+    "message": "Group tabs with OpenAI or Anthropic compatible APIs"
   },
   "features": {
     "message": "Key Features"
@@ -270,70 +259,6 @@
   },
   "feature_5": {
     "message": "Multi-language Interface"
-  },
-
-  "provider_openai": {
-    "message": "OpenAI",
-    "description": "OpenAI provider name"
-  },
-  "provider_deepseek": {
-    "message": "DeepSeek",
-    "description": "DeepSeek provider name"
-  },
-  "provider_anthropic": {
-    "message": "Anthropic",
-    "description": "Anthropic provider name"
-  },
-  "provider_google": {
-    "message": "Google AI"
-  },
-  "provider_alibaba": {
-    "message": "Alibaba Cloud (Qwen)",
-    "description": "Alibaba Cloud provider name"
-  },
-  "provider_baidu": {
-    "message": "Baidu (ERNIE)",
-    "description": "Baidu provider name"
-  },
-  "provider_zhipu": {
-    "message": "Zhipu AI (ChatGLM)",
-    "description": "Zhipu AI provider name"
-  },
-  "provider_moonshot": {
-    "message": "Moonshot AI (Kimi)",
-    "description": "Moonshot AI provider name"
-  },
-  "provider_01ai": {
-    "message": "01.AI (Yi)",
-    "description": "01.AI provider name"
-  },
-  "provider_minimax": {
-    "message": "MiniMax",
-    "description": "MiniMax provider name"
-  },
-  "provider_doubao": {
-    "message": "ByteDance (Doubao)",
-    "description": "ByteDance provider name"
-  },
-  "provider_xunfei": {
-    "message": "iFlytek (Spark)",
-    "description": "iFlytek provider name"
-  },
-  "provider_sensetime": {
-    "message": "SenseTime",
-    "description": "SenseTime provider name"
-  },
-  "provider_stepfun": {
-    "message": "StepFun",
-    "description": "StepFun provider name"
-  },
-  "provider_tencent": {
-    "message": "Tencent (Hunyuan)",
-    "description": "Tencent provider name"
-  },
-  "provider_custom": {
-    "message": "Custom",
-    "description": "Custom provider option"
   },
   "error_invalid_api_url": {
     "message": "Unable to build valid API URL",
@@ -367,7 +292,6 @@
     "message": "New groups must contain at least $1 tabs. Related tabs may be added to existing groups. If no meaningful groups can be formed, return {\"groups\": []}.",
     "description": "Minimum group size and empty result instructions"
   },
-  
   "system_prompt_intro": {
     "message": "Please intelligently group the tab information (URLs and titles) by organizing related content together.",
     "description": "AI system prompt introduction"
@@ -388,7 +312,6 @@
     "message": "Return only JSON with intuitive group names: {\"groups\":[{\"name\":\"Group name\",\"tabIds\":[1,2]}]}. Use only the provided tab IDs, each at most once. Do not repeat URLs or titles in the output.",
     "description": "JSON format output instructions"
   },
-  
   "min_tabs_in_group": {
     "message": "Min Tabs in Group",
     "description": "Minimum tabs in group setting"
@@ -469,7 +392,6 @@
     "message": "Full Settings",
     "description": "Open full settings page button text"
   },
-  
   "enable_auto_group": {
     "message": "Enable Auto Group",
     "description": "Enable auto group setting"
@@ -482,7 +404,6 @@
     "message": "Grouping Rules",
     "description": "Grouping rules configuration section title"
   },
-
   "log_api_key_decryption_failed": {
     "message": "API key decryption failed, please reconfigure",
     "description": "API key decryption failed log message"
@@ -543,7 +464,6 @@
     "message": "Unknown provider",
     "description": "Unknown provider error message"
   },
-  
   "status_configured": {
     "message": "Configured",
     "description": "Provider configured status"
@@ -551,10 +471,6 @@
   "status_not_configured": {
     "message": "Not Configured",
     "description": "Provider not configured status"
-  },
-  "type_builtin": {
-    "message": "Built-in",
-    "description": "Built-in provider type"
   },
   "type_custom": {
     "message": "Custom",
@@ -612,7 +528,6 @@
     "message": "Refresh failed, click to retry",
     "description": "Refresh failed retry prompt"
   },
-  
   "language_switched": {
     "message": "Language switched",
     "description": "Language switch success prompt"
@@ -625,7 +540,6 @@
     "message": "Language settings saved, please refresh the page",
     "description": "Language settings saved prompt"
   },
-  
   "provider_config_saved": {
     "message": "Provider configuration saved",
     "description": "Provider config save success prompt"
@@ -654,7 +568,6 @@
     "message": "Save settings failed: {error}",
     "description": "Save settings failed prompt"
   },
-  
   "global_settings_saved": {
     "message": "Global settings saved",
     "description": "Global settings save success prompt"
@@ -675,7 +588,6 @@
     "message": "All settings reset",
     "description": "Settings reset success prompt"
   },
-  
   "form_elements_not_found": {
     "message": "Form elements not found",
     "description": "Form elements not found error"
@@ -704,7 +616,6 @@
     "message": "Provider does not exist, please refresh and try again",
     "description": "Provider not exist error"
   },
-  
   "config_ui_not_found": {
     "message": "Configuration UI elements not found, please manually switch to \"Current Config\" tab",
     "description": "Config UI elements not found error"
@@ -912,5 +823,44 @@
   "error_system_prompt_generation_failed_text": {
     "message": "System prompt generation failed",
     "description": "System prompt generation failed error text"
+  },
+  "connections_description": {
+    "message": "Add and name connections using OpenAI or Anthropic compatible APIs."
+  },
+  "connection_active": {
+    "message": "Active connection"
+  },
+  "connection_none": {
+    "message": "Select a connection"
+  },
+  "connection_add": {
+    "message": "Add connection"
+  },
+  "connection_name": {
+    "message": "Name"
+  },
+  "connection_protocol": {
+    "message": "Protocol"
+  },
+  "connection_compatible": {
+    "message": "compatible"
+  },
+  "connection_endpoint": {
+    "message": "Full endpoint URL"
+  },
+  "connection_model": {
+    "message": "Model name"
+  },
+  "connection_saved": {
+    "message": "Connection saved"
+  },
+  "connection_delete_confirm": {
+    "message": "Delete this connection?"
+  },
+  "connection_permission_required": {
+    "message": "Network permissions required for this endpoint"
+  },
+  "connection_required": {
+    "message": "Complete all connection fields"
   }
 }

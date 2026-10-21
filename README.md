@@ -9,33 +9,18 @@ An intelligent browser tab grouping extension powered by AI models for automatic
 ## 🚀 Key Features
 
 - **Smart Grouping**: Uses AI models to automatically categorize tabs based on content and titles
-- **Multi-Provider Support**: Supports 15+ AI providers including OpenAI, DeepSeek, Alibaba Cloud, Baidu, etc.
+- **Compatible APIs**: OpenAI Chat Completions and Anthropic Messages protocols with user-named connections.
 - **Auto-Trigger**: Automatically triggers grouping when ungrouped tabs reach a set threshold
 - **Manual Grouping**: Manually trigger tab grouping at any time
-- **Configuration Persistence**: Independent configuration saving for each AI provider with automatic restoration when switching
+- **Configuration Persistence**: Save named connections independently and switch the active connection
 - **Meaningless Group Filtering**: Intelligently filters out meaningless groups like "Others", "Miscellaneous", etc.
 - **Tab Sorting**: Automatically moves ungrouped tabs to the rightmost position after grouping
 
-## 🤖 Supported AI Providers
+## 🤖 API Connections
 
-### International Providers
-- OpenAI (GPT-4, GPT-3.5)
-- Anthropic (Claude)
-- Google (Gemini)
+Add a connection with your own name, choose **OpenAI compatible** or **Anthropic compatible**, and enter the full endpoint URL, API key, and model name. You can save multiple connections and select one for grouping. There are no built-in vendor presets or model catalogs.
 
-### Chinese Providers
-- DeepSeek
-- Alibaba Cloud (Qwen)
-- Baidu (ERNIE)
-- Zhipu AI (ChatGLM)
-- Moonshot AI (Kimi)
-- 01.AI (Yi)
-- MiniMax
-- ByteDance (Doubao)
-- iFlytek (Spark)
-- SenseTime
-- StepFun
-- Tencent (Hunyuan)
+Examples of endpoint paths are `/v1/chat/completions` and `/v1/messages`. The extension requests access only to the endpoint you configure when saving a connection.
 
 ## 📦 Installation & Usage
 
@@ -45,7 +30,7 @@ An intelligent browser tab grouping extension powered by AI models for automatic
 3. Confirm installation permissions
 
 ### Developer Mode Installation
-1. Download the source code. With Node.js 22.13 or later, run `npm ci` and `npm run build`.
+1. Download the source code. Run `npm ci` and `npm run build`.
 2. Open Chrome browser, go to `chrome://extensions/`
 3. Enable "Developer mode"
 4. Click "Load unpacked extension"
@@ -55,9 +40,9 @@ An intelligent browser tab grouping extension powered by AI models for automatic
 
 ### Basic Configuration
 1. Click the extension icon to open settings page
-2. Select your AI service provider
-3. Enter API Key and related configuration
-4. Choose the model to use
+2. Add and name a connection
+3. Choose its protocol and enter the full endpoint URL, API key, and model name
+4. Save and select the connection
 
 ### Advanced Settings
 - **Auto-group threshold**: Set how many ungrouped tabs trigger automatic grouping

@@ -4,10 +4,9 @@
     "description": "扩展名称"
   },
   "ext_description": {
-    "message": "智能AI标签页分组管理器，支持OpenAI/DeepSeek等15+供应商，自动分类标签页提升浏览效率。",
+    "message": "使用自行配置的 OpenAI 或 Anthropic 兼容 API 连接，智能分组浏览器标签页。",
     "description": "扩展描述"
   },
-  
   "settings": {
     "message": "设置",
     "description": "设置页面标题"
@@ -19,7 +18,7 @@
     "message": "设置"
   },
   "nav_providers": {
-    "message": "模型供应商"
+    "message": "连接"
   },
   "nav_advanced": {
     "message": "高级设置"
@@ -121,10 +120,6 @@
     "message": "自定义供应商",
     "description": "自定义供应商列表标题"
   },
-  "builtin_providers": {
-    "message": "内置供应商",
-    "description": "内置供应商列表标题"
-  },
   "configure_provider_modal_title": {
     "message": "配置供应商",
     "description": "配置供应商模态框标题"
@@ -132,10 +127,6 @@
   "add_custom_provider_modal_title": {
     "message": "添加自定义供应商",
     "description": "添加自定义供应商模态框标题"
-  },
-  "no_providers_message": {
-    "message": "请先添加自定义供应商或在[当前配置]中配置内置供应商",
-    "description": "没有配置供应商时的提示信息"
   },
   "api_key_status": {
     "message": "API密钥状态",
@@ -206,7 +197,6 @@
     "message": "保存供应商",
     "description": "保存供应商按钮文字"
   },
-
   "provider_base_url": {
     "message": "API基础URL"
   },
@@ -228,7 +218,6 @@
   "provider_models_description": {
     "message": "每行输入一个模型名称，留空将自动从API获取"
   },
-
   "max_tabs": {
     "message": "最大标签页数量"
   },
@@ -251,7 +240,7 @@
     "message": "描述"
   },
   "app_description": {
-    "message": "智能AI标签页管理扩展，支持多种AI服务供应商"
+    "message": "通过 OpenAI 或 Anthropic 兼容 API 智能整理标签页"
   },
   "features": {
     "message": "主要功能"
@@ -271,72 +260,6 @@
   "feature_5": {
     "message": "多语言界面"
   },
-
-  "provider_openai": {
-    "message": "OpenAI",
-    "description": "OpenAI服务商名称"
-  },
-  "provider_deepseek": {
-    "message": "DeepSeek",
-    "description": "DeepSeek服务商名称"
-  },
-  "provider_anthropic": {
-    "message": "Anthropic",
-    "description": "Anthropic服务商名称"
-  },
-  "provider_google": {
-    "message": "Google AI"
-  },
-
-  "provider_alibaba": {
-    "message": "阿里云 (通义千问)",
-    "description": "阿里云服务商名称"
-  },
-  "provider_baidu": {
-    "message": "百度 (文心一言)",
-    "description": "百度服务商名称"
-  },
-  "provider_zhipu": {
-    "message": "智谱清言 (ChatGLM)",
-    "description": "智谱AI服务商名称"
-  },
-  "provider_moonshot": {
-    "message": "月之暗面 (Kimi)",
-    "description": "月之暗面服务商名称"
-  },
-  "provider_01ai": {
-    "message": "零一万物 (Yi)",
-    "description": "零一万物服务商名称"
-  },
-  "provider_minimax": {
-    "message": "MiniMax",
-    "description": "MiniMax服务商名称"
-  },
-  "provider_doubao": {
-    "message": "字节跳动 (豆包)",
-    "description": "字节跳动服务商名称"
-  },
-  "provider_xunfei": {
-    "message": "科大讯飞 (星火)",
-    "description": "科大讯飞服务商名称"
-  },
-  "provider_sensetime": {
-    "message": "商汤科技 (日日新)",
-    "description": "商汤科技服务商名称"
-  },
-  "provider_stepfun": {
-    "message": "阶跃星辰 (Step)",
-    "description": "阶跃星辰服务商名称"
-  },
-  "provider_tencent": {
-    "message": "腾讯 (混元)",
-    "description": "腾讯服务商名称"
-  },
-  "provider_custom": {
-    "message": "自定义",
-    "description": "自定义服务商选项"
-  },
-  
   "error_invalid_api_url": {
     "message": "无法构建有效的API URL",
     "description": "API URL构建失败错误消息"
@@ -369,8 +292,6 @@
     "message": "新建分组必须至少包含 $1 个标签页。相关标签页可以加入现有分组。如果无法形成有明确主题的分组，请返回 {\"groups\": []}。",
     "description": "最小分组数量与空结果指令"
   },
-
-  
   "system_prompt_intro": {
     "message": "请根据标签页信息（网址和标题）进行智能分组，将相关内容归类到一起。",
     "description": "AI系统提示词开头"
@@ -391,7 +312,7 @@
     "message": "只返回JSON，分组名称要自然易懂：{\"groups\":[{\"name\":\"分组名称\",\"tabIds\":[1,2]}]}。只能使用输入中的标签页ID，每个ID最多出现一次，输出中不要重复网址或标题。",
     "description": "JSON格式输出指令"
   },
- "min_tabs_in_group": {
+  "min_tabs_in_group": {
     "message": "最小分组标签数",
     "description": "最小分组标签数设置"
   },
@@ -471,7 +392,6 @@
     "message": "完整配置",
     "description": "打开完整配置页页按钮文本"
   },
-
   "enable_auto_group": {
     "message": "启用自动分组",
     "description": "启用自动分组设置"
@@ -484,7 +404,6 @@
     "message": "分组规则配置",
     "description": "分组规则配置区块标题"
   },
-
   "log_api_key_decryption_failed": {
     "message": "API密钥解密失败，请重新配置",
     "description": "API密钥解密失败日志消息"
@@ -545,7 +464,6 @@
     "message": "未知的供应商",
     "description": "未知供应商错误消息"
   },
-  
   "status_configured": {
     "message": "已配置",
     "description": "供应商已配置状态"
@@ -553,10 +471,6 @@
   "status_not_configured": {
     "message": "未配置",
     "description": "供应商未配置状态"
-  },
-  "type_builtin": {
-    "message": "内置",
-    "description": "内置供应商类型"
   },
   "type_custom": {
     "message": "自定义",
@@ -614,7 +528,6 @@
     "message": "刷新失败，点击重试",
     "description": "刷新失败重试提示"
   },
-  
   "language_switched": {
     "message": "语言已切换",
     "description": "语言切换成功提示"
@@ -627,7 +540,6 @@
     "message": "语言设置已保存，请刷新页面",
     "description": "语言设置保存提示"
   },
-  
   "provider_config_saved": {
     "message": "供应商配置已保存",
     "description": "供应商配置保存成功提示"
@@ -656,7 +568,6 @@
     "message": "保存设置失败: {error}",
     "description": "保存设置失败提示"
   },
-  
   "global_settings_saved": {
     "message": "全局设置已保存",
     "description": "全局设置保存成功提示"
@@ -677,7 +588,6 @@
     "message": "所有设置已重置",
     "description": "设置重置成功提示"
   },
-  
   "form_elements_not_found": {
     "message": "表单元素未找到",
     "description": "表单元素未找到错误"
@@ -706,7 +616,6 @@
     "message": "供应商不存在，请刷新页面重试",
     "description": "供应商不存在错误"
   },
-  
   "config_ui_not_found": {
     "message": "配置界面元素未找到，请手动切换到「当前配置」标签",
     "description": "配置界面元素未找到错误"
@@ -914,5 +823,44 @@
   "error_system_prompt_generation_failed_text": {
     "message": "系统提示词生成失败",
     "description": "系统提示词生成失败错误文本"
+  },
+  "connections_description": {
+    "message": "自行添加并命名连接，选择兼容协议并填写 API 配置。"
+  },
+  "connection_active": {
+    "message": "当前连接"
+  },
+  "connection_none": {
+    "message": "请选择连接"
+  },
+  "connection_add": {
+    "message": "添加连接"
+  },
+  "connection_name": {
+    "message": "连接名称"
+  },
+  "connection_protocol": {
+    "message": "兼容协议"
+  },
+  "connection_compatible": {
+    "message": "兼容"
+  },
+  "connection_endpoint": {
+    "message": "完整端点 URL"
+  },
+  "connection_model": {
+    "message": "模型名"
+  },
+  "connection_saved": {
+    "message": "连接已保存"
+  },
+  "connection_delete_confirm": {
+    "message": "确定删除这个连接？"
+  },
+  "connection_permission_required": {
+    "message": "需要允许访问此端点所在域名"
+  },
+  "connection_required": {
+    "message": "请填写全部连接字段"
   }
 }
