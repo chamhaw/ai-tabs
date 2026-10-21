@@ -1,6 +1,9 @@
 {
   "name": "ai-tabs",
   "version": "1.0.4",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "description": "智能AI标签页管理扩展，支持多种AI服务供应商",
   "scripts": {
     "build": "webpack --config webpack.config.js",
@@ -62,5 +65,12 @@
     "management"
   ],
   "author": "AI Tabs Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/anthropic": "4.0.85",
+    "@ai-sdk/deepseek": "3.0.70",
+    "@ai-sdk/google": "4.0.102",
+    "@ai-sdk/openai-compatible": "3.0.75",
+    "ai": "7.0.148"
+  }
 }

@@ -45,11 +45,11 @@ An intelligent browser tab grouping extension powered by AI models for automatic
 3. Confirm installation permissions
 
 ### Developer Mode Installation
-1. Download source code locally
+1. Download the source code. With Node.js 22.13 or later, run `npm ci` and `npm run build`.
 2. Open Chrome browser, go to `chrome://extensions/`
 3. Enable "Developer mode"
 4. Click "Load unpacked extension"
-5. Select the project folder
+5. Select the generated `dist` folder
 
 ## ⚙️ Configuration
 

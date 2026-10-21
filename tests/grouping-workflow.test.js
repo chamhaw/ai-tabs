@@ -5,6 +5,7 @@ const React = require('react');
 const { act } = React;
 const { createRoot } = require('react-dom/client');
 const messages = require('../src/_locales/en/messages.json');
+const { client, chatResponse } = require('./helpers/model-client');
 
 // Exercise the production entry points; only browser, storage and network are faked.
 function loadSource(file, dependencies = {}) {
@@ -14,6 +15,7 @@ function loadSource(file, dependencies = {}) {
   const module = { exports: {} };
   const sourceRequire = (id) => {
     if (id in dependencies) return dependencies[id];
+    if (id === './modules/model-client') return client;
     if (id === './modules/security') return { extensionStorage: { getApiKey: async () => 'test-key' } };
     if (id === './modules/i18n') return {
       initI18n: async () => {},
@@ -79,10 +81,7 @@ afterEach(async () => {
 });
 
 function respondWith(content) {
-  fetch.mockResolvedValue({
-    ok: true,
-    json: async () => ({ choices: [{ message: { content: typeof content === 'string' ? content : JSON.stringify(content) } }] })
-  });
+  fetch.mockResolvedValue(chatResponse(typeof content === 'string' ? content : JSON.stringify(content)));
 }
 
 test.each([singleton, { groups: [] }])('no eligible groups finishes normally and leaves tabs alone: %j', async (response) => {
@@ -99,7 +98,7 @@ test('the AI receives the configured minimum and permission to return no groups'
   settings.minTabsInGroup = 3;
   respondWith({ groups: [] });
   await startGrouping();
-  const prompt = JSON.parse(fetch.mock.calls[0][1].body).messages[0].content;
+  const prompt = JSON.parse(fetch.mock.calls[0][1].body).messages.filter(message => message.role === 'system').map(message => message.content).join('\n');
   expect(prompt).toContain('at least 3 tabs');
   expect(prompt).toContain('{"groups": []}');
 });
@@ -174,8 +173,8 @@ test('a large batch uses compact IDs and groups duplicate URLs as separate tabs'
   respondWith({ groups: [{ name: 'Articles', tabIds: ids }] });
   expect(await startGrouping()).toMatchObject({ success: true });
   const request = JSON.parse(fetch.mock.calls[0][1].body);
-  expect(JSON.parse(request.messages[1].content)).toEqual(tabs.slice(0, 200).map(({ id, url, title }) => ({ id, url, title })));
-  expect(request.messages[0].content).toContain('"tabIds"');
+  expect(JSON.parse(request.messages.find(message => message.role === 'user').content)).toEqual(tabs.slice(0, 200).map(({ id, url, title }) => ({ id, url, title })));
+  expect(request.messages.filter(message => message.role === 'system').map(message => message.content).join('\n')).toContain('"tabIds"');
   expect(chrome.tabs.group).toHaveBeenCalledWith({ tabIds: ids, createProperties: { windowId: 1 } });
   // Per-tab browser round trips must not grow with the size of the batch.
   expect(chrome.tabs.get).not.toHaveBeenCalled();
@@ -194,9 +193,7 @@ test('only requested tabs still eligible in the target window can be grouped', a
       { id: 6, windowId: 1, groupId: -1, url: 'https://example.com', title: 'Opened later' },
       { id: 7, windowId: 2, groupId: -1, url: 'https://example.com', title: 'Other window' }
     );
-    return { ok: true, json: async () => ({ choices: [{ message: {
-      content: JSON.stringify({ groups: [{ name: 'Articles', tabIds: [4, 4, 5, 6, 7, 8, 12345] }] })
-    } }] }) };
+    return chatResponse(JSON.stringify({ groups: [{ name: 'Articles', tabIds: [4, 4, 5, 6, 7, 8, 12345] }] }));
   });
   expect(await startGrouping()).toMatchObject({ success: true });
   expect(chrome.tabs.group).toHaveBeenCalledTimes(1);
@@ -250,8 +247,8 @@ test('a cold worker prepares the prompt in the saved language with one language 
     if (url.startsWith('chrome-extension://')) {
       return { ok: true, json: async () => require('../src/_locales/zh_CN/messages.json') };
     }
-    prompt = JSON.parse(options.body).messages[0].content;
-    return { ok: true, json: async () => ({ choices: [{ message: { content: '{"groups":[]}' } }] }) };
+    prompt = JSON.parse(options.body).messages.filter(message => message.role === 'system').map(message => message.content).join('\n');
+    return chatResponse('{"groups":[]}');
   });
   loadSource('background.ts', { './modules/i18n': i18n });
   const listener = chrome.runtime.onMessage.addListener.mock.calls.slice(-1)[0][0];

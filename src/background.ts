@@ -1,6 +1,7 @@
 // Import ES modules for security and i18n
 import { secureStorage, extensionStorage } from './modules/security';
 import { customI18n } from './modules/i18n';
+import { generateJson } from './modules/model-client';
 // Simple error handling without complex logger infrastructure
 
 async function getLocalizedMessage(key: string, substitutions?: string | string[]): Promise<string> {
@@ -519,55 +520,16 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
 
     // Build localized system prompt
     const systemPrompt = await buildSystemPrompt(minTabsInGroup, reuseExistingGroups, existingGroups);
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: JSON.stringify(tabsData) }
-    ];
-
-    // Build complete API URL  
-    const apiUrl = buildApiUrl(settings.baseURL, settings.endpoint);
-    
-    // Validate request parameters
-    if (typeof settings.apiKey !== 'string') {
-      throw new Error(`API key must be a string, got ${typeof settings.apiKey}`);
-    }
-    if (typeof settings.selectedModel !== 'string') {
-      throw new Error(`Model must be a string, got ${typeof settings.selectedModel}`);
-    }
-    // DeepSeek V4 enables thinking by default. Classification does not need it:
-    // https://api-docs.deepseek.com/guides/thinking_mode/
-    const supportsNonThinking = /(?:^|\/)(?:pub-)?deepseek-(?:v4-(?:flash|pro)|flash)$/i.test(settings.selectedModel);
-    const requestBody = JSON.stringify({
-      model: settings.selectedModel,
-      messages: messages,
-      response_format: { type: 'json_object' },
-      ...(supportsNonThinking ? { thinking: { type: 'disabled' } } : {})
-    });
+    const tabsPrompt = JSON.stringify(tabsData);
     const requestStartedAt = performance.now();
     console.info('[AI Tabs] API request starting', {
       preparationMs: Math.round(requestStartedAt - startedAt),
       tabCount: tabsData.length,
-      requestChars: requestBody.length
+      inputChars: systemPrompt.length + tabsPrompt.length
     });
     
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${settings.apiKey}`
-      },
-      body: requestBody
-    });
-
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`API request failed with status ${res.status}: ${errorText}`);
-    }
-
-    const data = await res.json();
+    const aiResponse = await generateJson(settings, systemPrompt, tabsPrompt);
     const responseReceivedAt = performance.now();
-    const aiResponse = data.choices?.[0]?.message?.content;
     
     
     
@@ -622,29 +584,6 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
   }
 }
 
-function buildApiUrl(baseURL: string, endpoint?: string): string {
-  if (!baseURL) {
-    throw new Error('Base URL is required');
-  }
-  
-  if (typeof baseURL !== 'string') {
-    console.error('Invalid baseURL passed to buildApiUrl:', baseURL);
-    throw new Error(`Base URL must be a string, got ${typeof baseURL}`);
-  }
-  
-  const cleanBaseURL = baseURL.replace(/\/$/, '');
-  
-  // If baseURL already includes the endpoint, return as is
-  if (baseURL.includes('/chat/completions') || baseURL.includes('/messages')) {
-    return baseURL;
-  }
-  
-  // Use provided endpoint or default to /chat/completions
-  const apiEndpoint = endpoint || '/chat/completions';
-  
-  return cleanBaseURL + apiEndpoint;
-}
-
 async function getCurrentProviderConfig(): Promise<any> {
   try {
     const result = await chrome.storage.local.get(['selectedProvider', 'providers']);
@@ -655,7 +594,7 @@ async function getCurrentProviderConfig(): Promise<any> {
       return null;
     }
     
-    const providerConfig = { ...providers[selectedProvider] };
+    const providerConfig = { ...providers[selectedProvider], providerId: selectedProvider };
     
     // Decrypt API key using secure extension storage
     if (providerConfig.apiKey) {
