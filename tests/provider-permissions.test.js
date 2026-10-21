@@ -143,9 +143,16 @@ test('editing switches directly between saved connections and saves only the dis
     second: { name: 'Work', protocol: 'anthropic', baseURL, apiKey: 'STORED_SECURELY', selectedModel: 'work-model' }
   }, 'first');
   await act(async () => document.querySelector('[data-edit="first"]').click());
+  const firstItem = document.querySelector('[data-edit="first"]').closest('.provider-item');
+  const secondItem = document.querySelector('[data-edit="second"]').closest('.provider-item');
+  expect(firstItem.contains(document.getElementById('connectionName'))).toBe(true);
+  expect(secondItem.querySelector('form')).toBeNull();
   await input('connectionName', 'Unsaved personal edit');
   await act(async () => document.querySelector('[data-edit="second"]').click());
   expect(document.getElementById('connectionName').value).toBe('Work');
+  expect(firstItem.querySelector('form')).toBeNull();
+  expect(secondItem.contains(document.getElementById('connectionName'))).toBe(true);
+  expect(document.querySelectorAll('#page-providers form')).toHaveLength(1);
   expect(document.getElementById('connectionProtocol').value).toBe('anthropic');
   expect(document.getElementById('connectionModel').value).toBe('work-model');
   await input('connectionName', 'Office');
@@ -154,6 +161,7 @@ test('editing switches directly between saved connections and saves only the dis
   const saved = chrome.storage.local.set.mock.calls.map(([value]) => value).find(value => value.providers);
   expect(saved.providers.first.name).toBe('Personal');
   expect(saved.providers.second.name).toBe('Office');
+  expect(document.querySelector('#page-providers form')).toBeNull();
   expect(saved.selectedProvider).toBe('first');
   expect(storeApiKey).toHaveBeenCalledWith('second', 'test-key');
 });

@@ -104,6 +104,36 @@ export default function ConnectionsSettings() {
 
   const update = (field: keyof typeof emptyForm, value: string) => setForm(previous => ({ ...previous, [field]: value }));
 
+  const renderForm = () => <form className="connection-form" id={`connection-form-${editing || 'new'}`} onSubmit={save}>
+    <div className="form-group">
+      <label htmlFor="connectionName">{text('connection_name', 'Name')}</label>
+      <input id="connectionName" type="text" required value={form.name} onChange={event => update('name', event.target.value)} />
+    </div>
+    <div className="form-group">
+      <label htmlFor="connectionProtocol">{text('connection_protocol', 'Protocol')}</label>
+      <select id="connectionProtocol" value={form.protocol} onChange={event => update('protocol', event.target.value)}>
+        <option value="openai">OpenAI {text('connection_compatible', 'compatible')}</option>
+        <option value="anthropic">Anthropic {text('connection_compatible', 'compatible')}</option>
+      </select>
+    </div>
+    <div className="form-group">
+      <label htmlFor="connectionEndpoint">{text('connection_endpoint', 'Full endpoint URL')}</label>
+      <input id="connectionEndpoint" type="url" required value={form.baseURL} placeholder={form.protocol === 'openai' ? 'https://example.com/v1/chat/completions' : 'https://example.com/v1/messages'} onChange={event => update('baseURL', event.target.value)} />
+    </div>
+    <div className="form-group">
+      <label htmlFor="connectionApiKey">API Key</label>
+      <PasswordInput id="connectionApiKey" required value={form.apiKey} onChange={value => update('apiKey', value)} />
+    </div>
+    <div className="form-group">
+      <label htmlFor="connectionModel">{text('connection_model', 'Model name')}</label>
+      <input id="connectionModel" type="text" required value={form.selectedModel} onChange={event => update('selectedModel', event.target.value)} />
+    </div>
+    <div className="form-actions">
+      <button id="saveConnection" className="btn btn-primary" type="submit" disabled={saving || loadingConnection}>{text('save', 'Save')}</button>
+      <button className="btn btn-secondary" type="button" disabled={saving || loadingConnection} onClick={() => { setEditing(null); setForm(emptyForm); }}>{text('cancel', 'Cancel')}</button>
+    </div>
+  </form>;
+
   return <div className="content-page active" id="page-providers">
     <div className="page-header">
       <h3>{text('nav_providers', 'Connections')}</h3>
@@ -120,45 +150,21 @@ export default function ConnectionsSettings() {
       <button id="addConnection" className="btn btn-primary" disabled={!ready || saving || loadingConnection || editing !== null} onClick={() => { setForm(emptyForm); setEditing(''); setStatus(''); }}>
         {text('connection_add', 'Add connection')}
       </button>
-      <div className="providers-items">
-        {Object.entries(connections).map(([key, config]) => <div key={key} className="provider-item">
-          <div className="provider-info"><div className="provider-name">{config.name || key}</div><div className="provider-details">{config.selectedModel}</div></div>
-          <div className="provider-actions">
-            <button className="btn btn-secondary" data-edit={key} disabled={saving || loadingConnection} onClick={() => void edit(key)}>{text('edit', 'Edit')}</button>
-            <button className="btn btn-secondary" data-delete={key} disabled={saving || loadingConnection || editing !== null} onClick={() => void remove(key)}>{text('delete', 'Delete')}</button>
+      {editing === '' && renderForm()}
+      <div className="connections-list">
+        {Object.entries(connections).map(([key, config]) => <div key={key} className="provider-item connection-item">
+          <div className="connection-header">
+            <div className="provider-info"><div className="provider-name">{config.name || key}</div><div className="provider-details">{config.selectedModel}</div></div>
+            <div className="provider-actions">
+              <button className="btn btn-secondary" data-edit={key} aria-expanded={editing === key} aria-controls={`connection-form-${key}`} disabled={saving || loadingConnection} onClick={() => void edit(key)}>{text('edit', 'Edit')}</button>
+              <button className="btn btn-secondary" data-delete={key} disabled={saving || loadingConnection || editing !== null} onClick={() => void remove(key)}>{text('delete', 'Delete')}</button>
+            </div>
           </div>
+          {editing === key && renderForm()}
         </div>)}
       </div>
     </div>
-    {editing !== null && <form className="settings-section" onSubmit={save}>
-      <div className="form-group">
-        <label htmlFor="connectionName">{text('connection_name', 'Name')}</label>
-        <input id="connectionName" required value={form.name} onChange={event => update('name', event.target.value)} />
-      </div>
-      <div className="form-group">
-        <label htmlFor="connectionProtocol">{text('connection_protocol', 'Protocol')}</label>
-        <select id="connectionProtocol" value={form.protocol} onChange={event => update('protocol', event.target.value)}>
-          <option value="openai">OpenAI {text('connection_compatible', 'compatible')}</option>
-          <option value="anthropic">Anthropic {text('connection_compatible', 'compatible')}</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="connectionEndpoint">{text('connection_endpoint', 'Full endpoint URL')}</label>
-        <input id="connectionEndpoint" type="url" required value={form.baseURL} placeholder={form.protocol === 'openai' ? 'https://example.com/v1/chat/completions' : 'https://example.com/v1/messages'} onChange={event => update('baseURL', event.target.value)} />
-      </div>
-      <div className="form-group">
-        <label htmlFor="connectionApiKey">API Key</label>
-        <PasswordInput id="connectionApiKey" required value={form.apiKey} onChange={value => update('apiKey', value)} />
-      </div>
-      <div className="form-group">
-        <label htmlFor="connectionModel">{text('connection_model', 'Model name')}</label>
-        <input id="connectionModel" required value={form.selectedModel} onChange={event => update('selectedModel', event.target.value)} />
-      </div>
-      <div className="form-actions">
-        <button id="saveConnection" className="btn btn-primary" type="submit" disabled={saving || loadingConnection}>{text('save', 'Save')}</button>
-        <button className="btn btn-secondary" type="button" disabled={saving || loadingConnection} onClick={() => { setEditing(null); setForm(emptyForm); }}>{text('cancel', 'Cancel')}</button>
-      </div>
-    </form>}
+
     <p role="status">{status}</p>
   </div>;
 }

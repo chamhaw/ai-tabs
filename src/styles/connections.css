@@ -1,0 +1,23 @@
+.connections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+#page-providers .connection-item {
+  display: block;
+  margin-bottom: 0;
+}
+
+.connection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.connection-form {
+  margin-top: 16px;
+  padding-top: 20px;
+  border-top: 1px solid #e8eaed;
+}
