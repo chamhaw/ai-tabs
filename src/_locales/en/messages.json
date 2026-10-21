@@ -385,7 +385,7 @@
     "description": "Grouping strategy prefix"
   },
   "system_prompt_format_instructions": {
-    "message": "Please return only JSON format with intuitive group names:\n\n{\n  \"groups\": [\n    {\n      \"name\": \"Group name\",\n      \"tabs\": [\n        {\n          \"url\": \"Tab URL\",\n          \"title\": \"Tab title\"\n        }\n      ]\n    }\n  ]\n}",
+    "message": "Return only JSON with intuitive group names: {\"groups\":[{\"name\":\"Group name\",\"tabIds\":[1,2]}]}. Use only the provided tab IDs, each at most once. Do not repeat URLs or titles in the output.",
     "description": "JSON format output instructions"
   },
   

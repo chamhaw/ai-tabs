@@ -8,10 +8,9 @@ async function getLocalizedMessage(key: string, substitutions?: string | string[
     // Ensure i18n is initialized with correct language
     if (!customI18n.initialized) {
       await customI18n.init();
+    } else {
+      await ensureCorrectLanguage(customI18n);
     }
-    
-    // Check if we need to reinitialize with user's language preference
-    await ensureCorrectLanguage(customI18n);
     
     const message = customI18n.getMessage(key, substitutions);
     
@@ -57,9 +56,10 @@ async function ensureCorrectLanguage(i18nInstance: typeof customI18n): Promise<v
 async function buildSystemPrompt(minTabsInGroup: number, reuseExistingGroups: boolean = false, existingGroups: chrome.tabGroups.TabGroup[] = []): Promise<string> {
   try {
     const intro = await getLocalizedMessage('system_prompt_intro');
-    const formatInstructions = await getLocalizedMessage('system_prompt_format_instructions');
-    const forbiddenRules = await getLocalizedMessage('system_prompt_forbidden_rules');
-    const minimumGroupSize = await getLocalizedMessage('system_prompt_min_tabs', String(minTabsInGroup));
+    // Resolve the language once per prompt instead of one storage round trip per message.
+    const formatInstructions = customI18n.getMessage('system_prompt_format_instructions');
+    const forbiddenRules = customI18n.getMessage('system_prompt_forbidden_rules');
+    const minimumGroupSize = customI18n.getMessage('system_prompt_min_tabs', String(minTabsInGroup));
     
     // Check if we got the actual translations or just the keys back
     if (intro === 'system_prompt_intro' || formatInstructions === 'system_prompt_format_instructions') {
@@ -71,7 +71,7 @@ async function buildSystemPrompt(minTabsInGroup: number, reuseExistingGroups: bo
     let existingGroupsInstruction = '';
     if (reuseExistingGroups && existingGroups.length > 0) {
       const groupNames = existingGroups.map(g => `"${g.title}"`).join(', ');
-      existingGroupsInstruction = await getLocalizedMessage('system_prompt_existing_groups', groupNames);
+      existingGroupsInstruction = customI18n.getMessage('system_prompt_existing_groups', groupNames);
     }
     
     // Combine all parts to create the complete system prompt
@@ -250,7 +250,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.type === 'START_GROUPING') {
+    const focusStartedAt = performance.now();
     chrome.windows.getLastFocused({ windowTypes: ['normal'] }, async (window) => {
+      console.info('[AI Tabs] Window lookup completed', {
+        windowLookupMs: Math.round(performance.now() - focusStartedAt)
+      });
       if (chrome.runtime.lastError || !window) {
         sendResponse({ success: false, error: chrome.runtime.lastError?.message || 'No active normal window' });
         return;
@@ -330,47 +334,59 @@ function normalizeGroupName(name: unknown): string {
     .replace(/\s+/g, '');
 }
 
-function getGroupName(group: any): string {
+interface GroupSuggestion {
+  name: string;
+  tabIds: number[];
+}
+
+function isGroupableTab(tab: chrome.tabs.Tab, windowId: number): boolean {
+  return tab.id !== undefined && tab.windowId === windowId && !!tab.url &&
+    !tab.url.startsWith('chrome://') && !tab.url.startsWith('moz-extension://');
+}
+
+function getGroupName(group: GroupSuggestion): string {
   const name = typeof group?.name === 'string' ? group.name.trim() : '';
   return name || 'AI Group';
 }
 
-function mergeGroupsByName(groups: any[]): Array<{ name: string; key: string; tabs: any[] }> {
-  const mergedGroups = new Map<string, { name: string; key: string; tabs: any[] }>();
+function mergeGroupsByName(groups: GroupSuggestion[]): Array<GroupSuggestion & { key: string }> {
+  const mergedGroups = new Map<string, GroupSuggestion & { key: string }>();
 
   for (const group of groups) {
     const name = getGroupName(group);
     const key = normalizeGroupName(name);
-    const tabs = Array.isArray(group?.tabs) ? group.tabs : [];
     const existingGroup = mergedGroups.get(key);
 
     if (existingGroup) {
-      existingGroup.tabs.push(...tabs);
+      existingGroup.tabIds.push(...group.tabIds);
     } else {
-      mergedGroups.set(key, { name, key, tabs: [...tabs] });
+      mergedGroups.set(key, { name, key, tabIds: [...group.tabIds] });
     }
   }
 
   return Array.from(mergedGroups.values());
 }
 
-async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: boolean = false): Promise<number> {
-  // Verify the window type before proceeding
-  const window = await chrome.windows.get(windowId);
+async function groupTabs(groups: GroupSuggestion[], windowId: number, reuseExistingGroups: boolean, requestedTabIds: Set<number>): Promise<number> {
+  // Refresh once after the network wait; this also drops tabs closed or moved meanwhile.
+  const [window, allTabs, existingGroups, groupingSettings] = await Promise.all([
+    chrome.windows.get(windowId),
+    chrome.tabs.query({ windowId }),
+    chrome.tabGroups.query({ windowId }),
+    chrome.storage.local.get(['minTabsInGroup'])
+  ]);
   
   if (window.type !== 'normal') {
     throw new Error(`Cannot create tab groups in ${window.type} window. Tab grouping only works in normal browser windows.`);
   }
   
-  // Get all current tabs and existing groups
-  const allTabs = await chrome.tabs.query({ windowId });
-  const existingGroups = await chrome.tabGroups.query({ windowId });
-  const groupingSettings = await chrome.storage.local.get(['minTabsInGroup']);
   const configuredMinTabs = Number(groupingSettings.minTabsInGroup);
   const minTabsInGroup = Number.isFinite(configuredMinTabs) && configuredMinTabs >= 1 ? configuredMinTabs : 2;
-  const candidateTabs = reuseExistingGroups
-    ? allTabs.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE)
-    : allTabs;
+  // IDs from the model are restricted to the exact request and current window.
+  const availableTabIds = new Set(allTabs
+    .filter(tab => isGroupableTab(tab, windowId) && requestedTabIds.has(tab.id!) &&
+      (!reuseExistingGroups || tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE))
+    .map(tab => tab.id!));
   
   // Create a map of existing group names to their IDs
   const existingGroupMap = new Map<string, number>();
@@ -381,40 +397,11 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
     }
   });
 
-  const availableTabsByUrl = new Map<string, chrome.tabs.Tab[]>();
-  candidateTabs.forEach(tab => {
-    if (!tab.url) {
-      return;
-    }
-
-    const tabsForUrl = availableTabsByUrl.get(tab.url) || [];
-    tabsForUrl.push(tab);
-    availableTabsByUrl.set(tab.url, tabsForUrl);
-  });
   let processedGroups = 0;
   let groupingError: Error | undefined;
   
   for (const group of mergeGroupsByName(groups)) {
-    // Find actual tab IDs by matching URLs
-    const tabIds: number[] = [];
-    
-    for (const groupTab of group.tabs) {
-      const tabsForUrl = availableTabsByUrl.get(groupTab.url) || [];
-      const matchingTab = tabsForUrl.shift();
-      if (matchingTab && matchingTab.id !== undefined) {
-        // Verify the tab is in the target normal window
-        if (matchingTab.windowId === windowId) {
-          // Avoid duplicate tab IDs
-          if (!tabIds.includes(matchingTab.id)) {
-            tabIds.push(matchingTab.id);
-          } else {
-            console.warn(`Duplicate tab ID ${matchingTab.id} for "${groupTab.title}", skipping duplicate`);
-          }
-        } else {
-          console.warn(`Tab "${groupTab.title}" is in a different window (${matchingTab.windowId} vs ${windowId}), skipping`);
-        }
-      }
-    }
+    let tabIds = [...new Set(group.tabIds)].filter(id => availableTabIds.has(id));
     
     const existingGroupId = existingGroupMap.get(group.key);
     const existingGroupTabCount = existingGroupId === undefined
@@ -426,34 +413,15 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
     
     if (tabIds.length >= minTabs) {
       try {
-        
-        // Verify all tabs exist and get their current window IDs
-        const validTabIds: number[] = [];
-        for (const tabId of tabIds) {
-          try {
-            const tab = await chrome.tabs.get(tabId);
-            if (tab.windowId !== windowId) {
-              continue;
-            }
-            // Check if tab is in a valid state for grouping
-            if (tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('moz-extension://')) {
-              validTabIds.push(tabId);
-            }
-          } catch (tabError) {
-            // Skip invalid tabs instead of failing the entire operation
-            continue;
-          }
-        }
-        
-        // Update tabIds to only include valid tabs
-        tabIds.length = 0;
-        tabIds.push(...validTabIds);
-        
-        // Re-check minimum tabs after filtering
-        if (tabIds.length < minTabs) {
-          continue;
-        }
-
+        // Recheck each batch just before applying it: Chrome can move tabs across windows.
+        const currentTabs = await chrome.tabs.query({ windowId });
+        const currentIds = new Set(currentTabs
+          .filter(tab => isGroupableTab(tab, windowId) &&
+            (!reuseExistingGroups || tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE))
+          .map(tab => tab.id!));
+        tabIds = tabIds.filter(id => currentIds.has(id));
+        if (tabIds.length < minTabs) continue;
+        tabIds.forEach(id => availableTabIds.delete(id));
         // Check if we should reuse existing group
         if (reuseExistingGroups && existingGroupId !== undefined) {
           
@@ -464,7 +432,7 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
         } else {
           // Create new group with retry
           const newGroupId = await retryTabGroupOperation(() => 
-            chrome.tabs.group({ tabIds })
+            chrome.tabs.group({ tabIds, createProperties: { windowId } })
           );
           
           await chrome.tabGroups.update(newGroupId, { title: group.name });
@@ -485,15 +453,18 @@ async function groupTabs(groups: any[], windowId: number, reuseExistingGroups: b
 }
 
 async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windowId: number) {
+  const startedAt = performance.now();
   try {
-    // Verify the window is a normal window before proceeding
-    const window = await chrome.windows.get(windowId);
+    const [window, settings, groupingSettings] = await Promise.all([
+      chrome.windows.get(windowId),
+      getCurrentProviderConfig(),
+      chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup'])
+    ]);
     
     if (window.type !== 'normal') {
       throw new Error(`Cannot create tab groups in ${window.type} window. Please try again in a normal browser window.`);
     }
     
-    const settings = await getCurrentProviderConfig();
     if (!settings || !settings.apiKey || !settings.baseURL || !settings.selectedModel) {
       throw new Error('AI settings not configured');
     }
@@ -509,7 +480,6 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     }
 
     // Get grouping settings
-    const groupingSettings = await chrome.storage.local.get(['reuseExistingGroups', 'minTabsInGroup']);
     const reuseExistingGroups = groupingSettings.reuseExistingGroups !== false; // default true
     const configuredMinTabs = Number(groupingSettings.minTabsInGroup);
     const minTabsInGroup = Number.isFinite(configuredMinTabs) && configuredMinTabs >= 1 ? configuredMinTabs : 2;
@@ -527,20 +497,19 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     } else {
       // Reuse existing groups: only process ungrouped tabs
       tabsToGroup = tabsToGroup.filter(tab => tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE);
-      
-      if (tabsToGroup.length === 0) {
-        // Notify UI if available; ignore when no receiver exists
-        void chrome.runtime
-          .sendMessage({ type: 'GROUPING_FINISHED', success: true, message: 'No ungrouped tabs to process' })
-          .catch(() => {});
-        return;
-      }
     }
 
-    const tabsData = tabsToGroup.map(t => ({
+    const tabsData = tabsToGroup.filter(tab => isGroupableTab(tab, windowId)).map(t => ({
+      id: t.id!,
       url: t.url || '',
       title: (t.title || '').trim().substring(0, 200)
     }));
+    if (tabsData.length === 0) {
+      void chrome.runtime
+        .sendMessage({ type: 'GROUPING_FINISHED', success: true, messageKey: 'grouping_no_matches' })
+        .catch(() => {});
+      return;
+    }
 
     // Get existing groups if reusing
     let existingGroups: chrome.tabGroups.TabGroup[] = [];
@@ -565,11 +534,20 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     if (typeof settings.selectedModel !== 'string') {
       throw new Error(`Model must be a string, got ${typeof settings.selectedModel}`);
     }
-    
+    // DeepSeek V4 enables thinking by default. Classification does not need it:
+    // https://api-docs.deepseek.com/guides/thinking_mode/
+    const supportsNonThinking = /(?:^|\/)(?:pub-)?deepseek-(?:v4-(?:flash|pro)|flash)$/i.test(settings.selectedModel);
     const requestBody = JSON.stringify({
       model: settings.selectedModel,
       messages: messages,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      ...(supportsNonThinking ? { thinking: { type: 'disabled' } } : {})
+    });
+    const requestStartedAt = performance.now();
+    console.info('[AI Tabs] API request starting', {
+      preparationMs: Math.round(requestStartedAt - startedAt),
+      tabCount: tabsData.length,
+      requestChars: requestBody.length
     });
     
     const res = await fetch(apiUrl, {
@@ -588,6 +566,7 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
     }
 
     const data = await res.json();
+    const responseReceivedAt = performance.now();
     const aiResponse = data.choices?.[0]?.message?.content;
     
     
@@ -613,10 +592,18 @@ async function initiateAndGroupTabs(tabsToGroup: chrome.tabs.Tab[] | null, windo
       throw new Error('AI response does not contain valid groups array. Please check AI provider settings and try again.');
     }
 
+    if (groupResult.some((group: any) => !group || !Array.isArray(group.tabIds))) {
+      throw new Error('AI response groups must contain a tabIds array');
+    }
     // A valid response may have no groups that meet the user's minimum size.
     const processedGroups = groupResult.length > 0
-      ? await groupTabs(groupResult, windowId, reuseExistingGroups)
+      ? await groupTabs(groupResult, windowId, reuseExistingGroups, new Set(tabsData.map(tab => tab.id)))
       : 0;
+    console.info('[AI Tabs] Grouping completed', {
+      apiMs: Math.round(responseReceivedAt - requestStartedAt),
+      groupingMs: Math.round(performance.now() - responseReceivedAt),
+      totalMs: Math.round(performance.now() - startedAt)
+    });
     // Notify UI if available; ignore when no receiver exists.
     void chrome.runtime
       .sendMessage({

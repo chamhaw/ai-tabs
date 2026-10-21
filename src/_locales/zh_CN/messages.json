@@ -388,7 +388,7 @@
     "description": "分组策略前缀"
   },
   "system_prompt_format_instructions": {
-    "message": "请只返回JSON格式，分组名称要自然易懂：\n\n{\n  \"groups\": [\n    {\n      \"name\": \"分组名称\",\n      \"tabs\": [\n        {\n          \"url\": \"标签页URL\",\n          \"title\": \"标签页标题\"\n        }\n      ]\n    }\n  ]\n}",
+    "message": "只返回JSON，分组名称要自然易懂：{\"groups\":[{\"name\":\"分组名称\",\"tabIds\":[1,2]}]}。只能使用输入中的标签页ID，每个ID最多出现一次，输出中不要重复网址或标题。",
     "description": "JSON格式输出指令"
   },
  "min_tabs_in_group": {

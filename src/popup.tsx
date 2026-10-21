@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { initI18n } from './modules/i18n';
 
 const Popup = () => {
@@ -9,6 +9,7 @@ const Popup = () => {
   const [status, setStatus] = useState('');
   const [statusType, setStatusType] = useState('info');
   const [loading, setLoading] = useState(false);
+  const groupingInProgress = useRef(false);
 
   // Helper function to get internationalized message using custom i18n
   const getMessage = async (key: string, substitutions?: any): Promise<string> => {
@@ -78,6 +79,7 @@ const Popup = () => {
     // Listen for messages from background script
     const messageListener = async (request: any) => {
       if (request.type === 'GROUPING_FINISHED') {
+        groupingInProgress.current = false;
         setLoading(false);
         if (request.success) {
           const successMessage = await getMessage(request.messageKey || 'log_grouping_completed');
@@ -127,6 +129,7 @@ const Popup = () => {
   };
 
   const showStatus = (message: string, type: string = 'info') => {
+    groupingInProgress.current = false;
     setLoading(false);
     setStatus(message);
     setStatusType(type);
@@ -137,12 +140,10 @@ const Popup = () => {
     setStatus('');
   };
 
-  const handleSmartGroup = async () => {
+  const handleSmartGroup = () => {
+    if (groupingInProgress.current) return;
+    groupingInProgress.current = true;
     showSpinner();
-    
-    // Get localized "in progress" message
-    const progressMessage = await getMessage('grouping_in_progress');
-    setTimeout(() => showStatus(progressMessage, 'info'), 0);
     
     chrome.runtime.sendMessage({ type: 'START_GROUPING' }, async (response) => {
       if (chrome.runtime.lastError) {
@@ -154,6 +155,17 @@ const Popup = () => {
       if (response && !response.success) {
         const failedMessage = await getMessage('grouping_failed', response.error);
         showStatus(failedMessage, 'error');
+      } else if (response?.success) {
+        // The background can skip a request during its cooldown.
+        groupingInProgress.current = false;
+        setLoading(false);
+      }
+    });
+    // Progress text must neither delay dispatch nor overwrite a completed result.
+    void getMessage('grouping_in_progress').then(message => {
+      if (groupingInProgress.current) {
+        setStatus(message);
+        setStatusType('info');
       }
     });
   };
