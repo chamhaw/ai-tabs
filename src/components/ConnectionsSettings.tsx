@@ -18,6 +18,7 @@ export default function ConnectionsSettings() {
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [loadingConnection, setLoadingConnection] = useState(false);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -30,6 +31,7 @@ export default function ConnectionsSettings() {
   }, []);
 
   const edit = async (key: string) => {
+    setLoadingConnection(true);
     try {
       const config = connections[key];
       const apiKey = await extensionStorage.getApiKey(key);
@@ -42,6 +44,7 @@ export default function ConnectionsSettings() {
       setEditing(key);
       setStatus('');
     } catch (error: any) { setStatus(error.message); }
+    finally { setLoadingConnection(false); }
   };
 
   const save = async (event: React.FormEvent) => {
@@ -109,20 +112,20 @@ export default function ConnectionsSettings() {
     <div className="settings-section">
       <div className="form-group">
         <label htmlFor="connectionSelect">{text('connection_active', 'Active connection')}</label>
-        <select id="connectionSelect" value={selected} disabled={!ready || saving || editing !== null} onChange={event => void select(event.target.value)}>
+        <select id="connectionSelect" value={selected} disabled={!ready || saving || loadingConnection || editing !== null} onChange={event => void select(event.target.value)}>
           <option value="">{text('connection_none', 'Select a connection')}</option>
           {Object.entries(connections).map(([key, config]) => <option key={key} value={key}>{config.name || key}</option>)}
         </select>
       </div>
-      <button id="addConnection" className="btn btn-primary" disabled={!ready || saving || editing !== null} onClick={() => { setForm(emptyForm); setEditing(''); setStatus(''); }}>
+      <button id="addConnection" className="btn btn-primary" disabled={!ready || saving || loadingConnection || editing !== null} onClick={() => { setForm(emptyForm); setEditing(''); setStatus(''); }}>
         {text('connection_add', 'Add connection')}
       </button>
       <div className="providers-items">
         {Object.entries(connections).map(([key, config]) => <div key={key} className="provider-item">
           <div className="provider-info"><div className="provider-name">{config.name || key}</div><div className="provider-details">{config.selectedModel}</div></div>
           <div className="provider-actions">
-            <button className="btn btn-secondary" data-edit={key} disabled={saving || editing !== null} onClick={() => void edit(key)}>{text('edit', 'Edit')}</button>
-            <button className="btn btn-secondary" data-delete={key} disabled={saving || editing !== null} onClick={() => void remove(key)}>{text('delete', 'Delete')}</button>
+            <button className="btn btn-secondary" data-edit={key} disabled={saving || loadingConnection} onClick={() => void edit(key)}>{text('edit', 'Edit')}</button>
+            <button className="btn btn-secondary" data-delete={key} disabled={saving || loadingConnection || editing !== null} onClick={() => void remove(key)}>{text('delete', 'Delete')}</button>
           </div>
         </div>)}
       </div>
@@ -152,8 +155,8 @@ export default function ConnectionsSettings() {
         <input id="connectionModel" required value={form.selectedModel} onChange={event => update('selectedModel', event.target.value)} />
       </div>
       <div className="form-actions">
-        <button id="saveConnection" className="btn btn-primary" type="submit" disabled={saving}>{text('save', 'Save')}</button>
-        <button className="btn btn-secondary" type="button" disabled={saving} onClick={() => { setEditing(null); setForm(emptyForm); }}>{text('cancel', 'Cancel')}</button>
+        <button id="saveConnection" className="btn btn-primary" type="submit" disabled={saving || loadingConnection}>{text('save', 'Save')}</button>
+        <button className="btn btn-secondary" type="button" disabled={saving || loadingConnection} onClick={() => { setEditing(null); setForm(emptyForm); }}>{text('cancel', 'Cancel')}</button>
       </div>
     </form>}
     <p role="status">{status}</p>

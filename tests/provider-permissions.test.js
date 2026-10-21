@@ -137,6 +137,27 @@ test('existing named connections can be selected, edited and deleted without los
   expect(chrome.storage.local.remove).toHaveBeenCalledWith(['secure_api_anthropic']);
 });
 
+test('editing switches directly between saved connections and saves only the displayed item', async () => {
+  await openSettings({
+    first: { name: 'Personal', protocol: 'openai', baseURL, apiKey: 'STORED_SECURELY', selectedModel: 'personal-model' },
+    second: { name: 'Work', protocol: 'anthropic', baseURL, apiKey: 'STORED_SECURELY', selectedModel: 'work-model' }
+  }, 'first');
+  await act(async () => document.querySelector('[data-edit="first"]').click());
+  await input('connectionName', 'Unsaved personal edit');
+  await act(async () => document.querySelector('[data-edit="second"]').click());
+  expect(document.getElementById('connectionName').value).toBe('Work');
+  expect(document.getElementById('connectionProtocol').value).toBe('anthropic');
+  expect(document.getElementById('connectionModel').value).toBe('work-model');
+  await input('connectionName', 'Office');
+  chrome.permissions.request.mockResolvedValue(true);
+  await act(async () => document.getElementById('saveConnection').click());
+  const saved = chrome.storage.local.set.mock.calls.map(([value]) => value).find(value => value.providers);
+  expect(saved.providers.first.name).toBe('Personal');
+  expect(saved.providers.second.name).toBe('Office');
+  expect(saved.selectedProvider).toBe('first');
+  expect(storeApiKey).toHaveBeenCalledWith('second', 'test-key');
+});
+
 test('host access is optional at install time', () => {
   const manifest = require('../src/manifest.json');
   expect(manifest.optional_host_permissions).toEqual(expect.arrayContaining(['https://*/*', 'http://*/*']));
